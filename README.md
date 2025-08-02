@@ -22,6 +22,11 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 * Animations use `bubble-in` (scale/bounce fade-in) and `bubble-out` (fade-out after 5 s).
 * Tweak cadence via `BUBBLE_INTERVAL`/`BUBBLE_JITTER` without redeploying by loading config from GAS.
 
+## Dynamic Difficulty
+* Consecutive wins ramp up the challenge.
+* Each streak shrinks stains ~20 %, adds ~15 % more splatters, and speeds the cannon by ~15 %.
+* Losing resets the streak and returns to base difficulty.
+
 ## Prize Odds
 Default odds live in `index.html`. To adjust without a push, expose them via `logGame` response or a `getConfig()` GAS endpoint, then fetch at runtime.
 
