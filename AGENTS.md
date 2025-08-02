@@ -5,7 +5,7 @@ The **Stain Blaster** mini-game reinforces Dublin Cleaners’ Three Uniques by i
 
 | Core Loop | Tech / Files |
 |-----------|--------------|
-| 1. Attract screen invites touch.<br>2. Fifteen stains appear over a white shirt background.<br>3. Guests tap/slide each stain → it vanishes.<br>4. Clear all within 12 s (including cannon-fired extras) → confetti, prize, QR.<br>5. Lose → friendly “Try again.” | `Code.gs` – GAS backend (log to Sheet).<br>`index.html` – Tailwind front end with responsive tweaks.<br>Sheet tab **StainBlasterLog** stores timestamp, voucher, prize, score, missed, duration, device, geo. |
+| 1. Attract screen invites touch.<br>2. Twenty-three stains appear over a white shirt background.<br>3. Guests tap/slide each stain → it vanishes.<br>4. Clear all within 12 s (including cannon-fired extras) → confetti, prize, QR.<br>5. Lose → friendly “Try again.” | `Code.gs` – GAS backend (log to Sheet).<br>`index.html` – Tailwind front end with responsive tweaks.<br>Sheet tab **StainBlasterLog** stores timestamp, voucher, prize, score, missed, duration, device, geo. |
 
 ## Prize Logic
 Weighted probabilities (60 % → $5, 25 % → $10, 10 % → $20, 4 % → $25, 1 % → $50) run **client-side** for snappy UX; results post to GAS where marketing can monitor redemption frequency and tweak weights.
