@@ -1,6 +1,6 @@
 # Stain Blaster Kiosk Game
 
-An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to win instant, QR‑encoded gift certificates.
+An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to win instant, QR‑encoded gift certificates. The same build now scales down for phones, keeping the cannon visible and shrinking stains for added challenge.
 
 ## Stack
 * **Google Apps Script (HTML Service)** – one `Code.gs` backend.
@@ -44,14 +44,14 @@ Each play logs a row to the Google Sheet with the following columns:
 | D      | Stains cleared | Number of stains the player removed     |
 | E      | Stains missed  | Stains left when time expired           |
 | F      | Seconds taken  | Duration of the game in seconds         |
-| G      | Device         | Source device label (e.g., kiosk)       |
+| G      | Device         | Source device label (kiosk or mobile)   |
 
 Monitor play counts, difficulty, and cost; pivot by day for prize budgeting.
 
 ## Local Assets
 * **Shirt background** – 1080 × 1920 PNG of a pressed white dress shirt.
-* **Stain sprites** – semi-transparent PNG splatters (~90 px) with drop shadow.
-* **Cannon sprite** – small, cartoony launcher anchored bottom-right.
+* **Stain sprites** – semi-transparent PNG splatters (~90 px) with drop shadow; phones render them ~25 % smaller.
+* **Cannon sprite** – small, cartoony launcher anchored bottom-right; shrinks on phones so it never covers the Play button.
 All images can be swapped by editing `index.html`; the service worker caches them for offline play.
 
 ## License
