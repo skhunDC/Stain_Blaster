@@ -87,11 +87,19 @@
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer, geo = '';
 
   function updateGeo(){
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(pos => {
-        geo = `${pos.coords.latitude},${pos.coords.longitude}`;
-      }, () => { geo = ''; });
-    }
+    return new Promise(resolve => {
+      if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(pos => {
+          geo = `${pos.coords.latitude},${pos.coords.longitude}`;
+          resolve(true);
+        }, () => {
+          geo = '';
+          resolve(false);
+        });
+      } else {
+        resolve(false);
+      }
+    });
   }
 
   function pickPrize(){
@@ -203,7 +211,6 @@
     startScreen.classList.add('hidden');
     clearTimeout(bubbleTimer);
     startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
-    updateGeo();
     gameArea.classList.remove('hidden');
     gameArea.querySelectorAll('.stain').forEach(s=>s.remove());
     if(!gameArea.contains(timerEl)) gameArea.appendChild(timerEl);
@@ -278,7 +285,15 @@
     scheduleBubble();
   }
 
-  playBtn.addEventListener('click', begin);
+  playBtn.addEventListener('click', () => {
+    updateGeo().then(allowed => {
+      if(allowed){
+        begin();
+      }else{
+        alert('Location access is required to play.');
+      }
+    });
+  });
   document.getElementById('restartBtn').addEventListener('click', reset);
 
   scheduleBubble();
