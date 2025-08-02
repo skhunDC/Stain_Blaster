@@ -16,6 +16,12 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 4. **Deploy → New Web App** “Execute as Me”, “Anyone”, copy URL.
 5. Point EloView/Yodeck to this URL (ensure portrait 1080×1920).
 
+## Attract Bubbles
+* Start screen spawns playful speech bubbles every ~4 s (±1 s jitter).
+* Lines rotate from the `BUBBLE_LINES` array; edit or fetch at runtime to change copy.
+* Animations use `bubble-in` (scale/bounce fade-in) and `bubble-out` (fade-out after 5 s).
+* Tweak cadence via `BUBBLE_INTERVAL`/`BUBBLE_JITTER` without redeploying by loading config from GAS.
+
 ## Prize Odds
 Default odds live in `index.html`. To adjust without a push, expose them via `logGame` response or a `getConfig()` GAS endpoint, then fetch at runtime.
 

@@ -9,12 +9,17 @@
   <style>
     .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));}
     #cannon{position:absolute;width:80px;height:80px;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;}
+    .bubble{position:absolute;pointer-events:none;}
+    .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
+    .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
+    @keyframes bubble-in{0%{transform:scale(0.6);opacity:0;}60%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
+    @keyframes bubble-out{to{transform:scale(0.8);opacity:0;}}
   </style>
 </head>
 <body class="h-full bg-white overflow-hidden">
   <!-- Attract / Start Screen -->
   <div id="startScreen" class="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-white touch-none select-none">
-    <img src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png" alt="Dublin Cleaners" class="w-56">
+    <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png" alt="Dublin Cleaners" class="w-56">
     <div class="text-5xl font-bold text-stone-700 text-center leading-tight">Stain Blaster</div>
     <div class="text-xl text-stone-500 text-center">Swipe the stains away in 12 seconds<br>and win an instant reward!</div>
     <button id="playBtn" class="px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition">Play Now</button>
@@ -55,6 +60,17 @@
     {p:0.99, value:25},
     {p:1.00, value:50}
   ];
+  const BUBBLE_LINES = [
+    'Think you can wipe all the stains?',
+    'Win up to $50 in 15 seconds!',
+    'Swipe fast – prizes await!',
+    'Spotless skills? Prove it!',
+    'Tap ▶ to blast and earn!',
+    'Your dry-cleaner believes in you 😎'
+  ];
+  const BUBBLE_INTERVAL = 4000; // ms between spawns
+  const BUBBLE_JITTER   = 1000; // ms random jitter
+  const BUBBLE_DURATION = 5000; // ms visible
 
   /* ----- DOM refs ----- */
   const startScreen = document.getElementById('startScreen');
@@ -64,8 +80,10 @@
   const resultScreen= document.getElementById('resultScreen');
   const resultText  = document.getElementById('resultText');
   const qrWrap      = document.getElementById('qrWrap');
+  const logo        = document.getElementById('logo');
+  const playBtn     = document.getElementById('playBtn');
 
-  let remaining, total, seconds, countdown, startTime, fireInterval;
+  let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer;
 
   function pickPrize(){
     const r = Math.random();
@@ -74,6 +92,47 @@
 
   function randomImage(){
     return STAIN_IMAGES[Math.floor(Math.random()*STAIN_IMAGES.length)];
+  }
+
+  function randomLine(){
+    return BUBBLE_LINES[Math.floor(Math.random()*BUBBLE_LINES.length)];
+  }
+
+  function spawnBubble(){
+    if(startScreen.classList.contains('hidden')) return;
+    if(startScreen.querySelectorAll('.bubble').length >= 3) return;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble max-w-[220px] px-4 py-2 rounded-2xl border-2 border-emerald-600 bg-white text-emerald-700 font-bold text-center shadow-md pointer-events-none';
+    bubble.innerHTML = `${randomLine()}<svg class="absolute -top-2 -right-2 w-4 h-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 0l2.09 6.26L18.18 7.5l-5.09 3.7L14.18 18 10 14.27 5.82 18l1.09-6.8L1.82 7.5l6.09-1.24L10 0z"/></svg>`;
+    startScreen.appendChild(bubble);
+    const rect = startScreen.getBoundingClientRect();
+    const maxY = rect.height * 0.6;
+    const avoid = [logo.getBoundingClientRect(), playBtn.getBoundingClientRect()];
+    const bw = bubble.offsetWidth;
+    const bh = bubble.offsetHeight;
+    let x, y, tries = 0, ok;
+    do {
+      x = Math.random() * (rect.width - bw);
+      y = Math.random() * (maxY - bh);
+      ok = !avoid.some(r => {
+        const rx = r.left - rect.left;
+        const ry = r.top - rect.top;
+        return !(x + bw < rx || x > rx + r.width || y + bh < ry || y > ry + r.height);
+      });
+      tries++;
+    } while(!ok && tries < 10);
+    bubble.style.left = x + 'px';
+    bubble.style.top  = y + 'px';
+    bubble.style.animation = 'bubble-in 0.6s ease-out, bubble-out 0.6s ease-in 4.4s forwards';
+    setTimeout(() => bubble.remove(), BUBBLE_DURATION);
+  }
+
+  function scheduleBubble(){
+    if(startScreen.classList.contains('hidden')) return;
+    bubbleTimer = setTimeout(() => {
+      spawnBubble();
+      scheduleBubble();
+    }, BUBBLE_INTERVAL + (Math.random()*2-1)*BUBBLE_JITTER);
   }
 
   function spawnStain(x,y){
@@ -130,6 +189,8 @@
 
   function begin(){
     startScreen.classList.add('hidden');
+    clearTimeout(bubbleTimer);
+    startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
     gameArea.classList.remove('hidden');
     gameArea.innerHTML = '';
     gameArea.appendChild(timerEl);
@@ -199,10 +260,13 @@
   function reset(){
     resultScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
+    scheduleBubble();
   }
 
-  document.getElementById('playBtn').addEventListener('click', begin);
+  playBtn.addEventListener('click', begin);
   document.getElementById('restartBtn').addEventListener('click', reset);
+
+  scheduleBubble();
 
   setInterval(()=>{
     if(!resultScreen.classList.contains('hidden') &&

@@ -28,3 +28,8 @@ A 10-line service-worker caches Tailwind CDN, images, and QR/confetti libraries 
 * A bottom-right cannon fires additional stains along arced paths every 3 s.
 * Timer reduced to 12 s; clearing **all** active stains (initial + fired) yields a win.
 * `logGame` now records `missed` count alongside `score`.
+
+## Phase 3 Notes
+* Attract mode spawns speech bubbles every ~4 s (±1 s) with playful lines.
+* Bubbles appear only on the start screen, fade after 5 s, and cap at three.
+* Copy lives in `BUBBLE_LINES` and timing in `BUBBLE_INTERVAL/JITTER` for easy tweaks.
