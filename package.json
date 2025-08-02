@@ -1,0 +1,11 @@
+{
+  "name": "stain_blaster",
+  "version": "1.0.0",
+  "description": "Dublin Cleaners 'Stain Blaster' game",
+  "scripts": {
+    "test": "jest --passWithNoTests"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
