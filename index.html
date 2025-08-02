@@ -8,7 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
-    #cannon{position:absolute;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:50;}
+    #ui-shell{position:fixed;inset:0;pointer-events:none;z-index:50;}
+    #cannon{position:absolute;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;}
     .bubble{position:absolute;pointer-events:none;}
     .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
     .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
@@ -29,6 +30,10 @@
   <div id="gameArea" class="absolute inset-0 hidden bg-[url('https://www.dublincleaners.com/wp-content/uploads/2025/08/Whiteshirt.png')] bg-cover">
     <!-- stains injected here -->
     <div id="timer" class="absolute top-6 left-1/2 -translate-x-1/2 text-5xl font-bold text-white drop-shadow">12</div>
+  </div>
+
+  <!-- Game UI Shell -->
+  <div id="ui-shell">
     <img id="cannon" src="https://www.dublincleaners.com/wp-content/uploads/2025/08/Canon.png" alt="cannon" class="select-none">
   </div>
 
@@ -83,6 +88,16 @@
   const qrWrap      = document.getElementById('qrWrap');
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
+
+  // Monitor any unexpected mutations to the cannon element
+  const cannonObserver = new MutationObserver(mutations => {
+    mutations.forEach(m => {
+      if ([...m.removedNodes].includes(cannon) || m.target === cannon) {
+        console.warn('Cannon mutation detected:', m);
+      }
+    });
+  });
+  cannonObserver.observe(document.body, {subtree:true, childList:true, attributes:true});
 
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer;
 
@@ -150,11 +165,7 @@
       remaining--;
       if(remaining===0 && seconds>0) win();
     });
-    if(gameArea.contains(cannon)){
-      gameArea.insertBefore(s, cannon);
-    }else{
-      gameArea.appendChild(s);
-    }
+    gameArea.appendChild(s);
     remaining++; total++;
     return s;
   }
@@ -202,7 +213,6 @@
     gameArea.classList.remove('hidden');
     gameArea.querySelectorAll('.stain').forEach(s=>s.remove());
     if(!gameArea.contains(timerEl)) gameArea.appendChild(timerEl);
-    if(!gameArea.contains(cannon)) gameArea.appendChild(cannon);
     remaining=0; total=0;
     for(let i=0;i<STAIN_START;i++) spawnStain();
     seconds = GAME_TIME;
