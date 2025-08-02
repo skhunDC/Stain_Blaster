@@ -182,12 +182,15 @@
   function fireCannon(){
     const rect = cannon.getBoundingClientRect();
     const area = gameArea.getBoundingClientRect();
-    const startX = rect.left + rect.width*0.2 - area.left;
-    const startY = rect.top  + rect.height*0.2 - area.top;
+    const mouthX = rect.left + rect.width*0.15 - area.left;
+    const mouthY = rect.top  + rect.height*0.15 - area.top;
     const targetX = Math.random()*(area.width - STAIN_SIZE);
     const targetY = Math.random()*(area.height - STAIN_SIZE - 100) + 50;
-    const angle = Math.atan2(targetY - startY, targetX - startX);
+    const angle = Math.atan2(targetY - mouthY, targetX - mouthX);
     cannon.style.transform = `rotate(${angle}rad)`;
+    const offset = 30;
+    const startX = mouthX + Math.cos(angle)*offset;
+    const startY = mouthY + Math.sin(angle)*offset;
     const s = spawnStain(startX, startY);
     animateProjectile(s,startX,startY,targetX,targetY);
   }
