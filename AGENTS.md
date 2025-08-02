@@ -5,7 +5,7 @@ The **Stain Blaster** mini-game reinforces Dublin Cleaners’ Three Uniques by i
 
 | Core Loop | Tech / Files |
 |-----------|--------------|
-| 1. Attract screen invites touch.<br>2. Twelve stains appear over a fabric background.<br>3. Guests tap/slide each stain → it vanishes.<br>4. Clear all within 15 s → confetti, prize, QR.<br>5. Lose → friendly “Try again.” | `Code.gs` – GAS backend (log to Sheet).<br>`index.html` – Tailwind kiosk front end.<br>Sheet tab **StainBlasterLog** stores timestamp, voucher, prize, score, duration. |
+| 1. Attract screen invites touch.<br>2. Fifteen stains appear over a white shirt background.<br>3. Guests tap/slide each stain → it vanishes.<br>4. Clear all within 12 s (including cannon-fired extras) → confetti, prize, QR.<br>5. Lose → friendly “Try again.” | `Code.gs` – GAS backend (log to Sheet).<br>`index.html` – Tailwind kiosk front end.<br>Sheet tab **StainBlasterLog** stores timestamp, voucher, prize, score, missed, duration. |
 
 ## Prize Logic
 Weighted probabilities (60 % → $5, 25 % → $10, 10 % → $20, 4 % → $25, 1 % → $50) run **client-side** for snappy UX; results post to GAS where marketing can monitor redemption frequency and tweak weights.
@@ -17,7 +17,14 @@ QR codes embed a plain-text voucher string (`DCGC-<epochMs>-<value>`), avoiding 
 A 10-line service-worker caches Tailwind CDN, images, and QR/confetti libraries so the kiosk keeps running during Wi-Fi hiccups.
 
 ## Future Enhancements
-* **Dynamic difficulty** – shrink stain size or raise count after consecutive wins.  
-* **Remote weights** – read prize probabilities from the Sheet for on-the-fly tuning.  
-* **Attract-loop video** – swap static start screen with looping MP4 call-outs.  
+* **Dynamic difficulty** – shrink stain size or raise count after consecutive wins.
+* **Remote weights** – read prize probabilities from the Sheet for on-the-fly tuning.
+* **Attract-loop video** – swap static start screen with looping MP4 call-outs.
 * **Analytics dashboard** – Data Studio viz of plays, win rates, and prize cost.
+
+## Phase 2 Notes
+* Background swaps to a high-res white dress shirt.
+* Stains use semi-transparent PNG splatters (~90 px) with drop shadows.
+* A bottom-right cannon fires additional stains along arced paths every 3 s.
+* Timer reduced to 12 s; clearing **all** active stains (initial + fired) yields a win.
+* `logGame` now records `missed` count alongside `score`.

@@ -24,12 +24,13 @@ function logGame(dataJSON) {
   const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
   const d     = JSON.parse(dataJSON);
   sheet.appendRow([
-    new Date(),          // Timestamp
-    d.code,              // Voucher code shown in QR
-    d.prize,             // Dollar value won
-    d.score,             // Stains cleared
-    d.duration,          // Seconds taken
-    d.device || 'kiosk'  // Device label
+    new Date(),            // Timestamp
+    d.code || '',          // Voucher code (empty on loss)
+    d.prize || 0,          // Dollar value won
+    d.score,               // Stains cleared
+    d.missed || 0,         // Stains missed
+    d.duration,            // Seconds taken
+    d.device || 'kiosk'    // Device label
   ]);
   return true;
 }

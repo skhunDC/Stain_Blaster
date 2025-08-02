@@ -1,6 +1,6 @@
 # Stain Blaster Kiosk Game
 
-An ✨ 15-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a shirt to win instant, QR-encoded gift certificates.
+An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to win instant, QR‑encoded gift certificates.
 
 ## Stack
 * **Google Apps Script (HTML Service)** – one `Code.gs` backend.
@@ -28,14 +28,17 @@ Default odds live in `index.html`. To adjust without a push, expose them via `lo
 | $50  | 1 %  |
 
 ## Sheet Schema
-| A              | B        | C     | D     | E        | F     |
-| -------------- | -------- | ----- | ----- | -------- | ----- |
-| Timestamp      | Code     | Prize | Score | Duration | Device|
+| A              | B        | C     | D     | E      | F        | G     |
+| -------------- | -------- | ----- | ----- | ------ | -------- | ----- |
+| Timestamp      | Code     | Prize | Score | Missed | Duration | Device|
 
-Monitor play counts & cost; pivot by day for prize budgeting.
+Monitor play counts, difficulty, and cost; pivot by day for prize budgeting.
 
 ## Local Assets
-Replace placeholder stain/shirt images by editing `.stain` CSS or inserting PNGs; brand art lives in your CMS cache, auto-offline via service worker.
+* **Shirt background** – 1080 × 1920 PNG of a pressed white dress shirt.
+* **Stain sprites** – semi-transparent PNG splatters (~90 px) with drop shadow.
+* **Cannon sprite** – small, cartoony launcher anchored bottom-right.
+All images can be swapped by editing `index.html`; the service worker caches them for offline play.
 
 ## License
 Internal use only – Dublin Cleaners. Fork freely inside org.
