@@ -68,22 +68,6 @@
   }
 
   function now(){ return Date.now() + timeOffset; }
-  function setCooldown(mins){
-    if(mins<=0){
-      localStorage.removeItem('nextPlay');
-    }else{
-      localStorage.setItem('nextPlay', now() + mins*60*1000);
-    }
-  }
-  function canPlay(){
-    const next = parseInt(localStorage.getItem('nextPlay') || '0',10);
-    if(now() < next){
-      const wait = Math.ceil((next - now())/60000);
-      alert(`Please come back in ${wait} minute${wait!==1?'s':''} to try again.`);
-      return false;
-    }
-    return true;
-  }
 
   function applyDifficulty(){
     STAIN_SIZE  = BASE_STAIN_SIZE / Math.pow(1.2, winStreak);
@@ -126,6 +110,52 @@
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer, geo = '';
+
+  function showMessage(msg){
+    if(resultScreen && !resultScreen.classList.contains('hidden')){
+      resultText.innerHTML = msg;
+    }else{
+      alert(msg);
+    }
+  }
+
+  function getSession(){
+    return JSON.parse(localStorage.getItem('gameSession')) || {};
+  }
+
+  function saveSession(s){
+    localStorage.setItem('gameSession', JSON.stringify(s));
+  }
+
+  function canPlayNow(){
+    const now = Date.now();
+    const session = getSession();
+    return !session.eligibleAt || now >= session.eligibleAt;
+  }
+
+  function handleGameEnd(result){
+    const now = Date.now();
+    let session = getSession();
+    session.lastPlay = now;
+
+    if(result === 'lose'){
+      session.winCount = 0;
+      session.eligibleAt = now + 10 * 60 * 1000;
+      showMessage("Thanks for playing! Please come back in 10 minutes to try again.");
+    } else if(result === 'win'){
+      const bonusChance = session.winCount === 0 ? 0.5 : 0.3;
+      const gotBonus = Math.random() < bonusChance;
+      if(gotBonus){
+        session.winCount = (session.winCount || 0) + 1;
+        showMessage("Lucky you! You’ve earned a bonus round. Tap to play again!");
+      } else {
+        session.winCount = 0;
+        session.eligibleAt = now + 10 * 60 * 1000;
+        showMessage("Great job! You’ve won. Come back in 10 minutes for another chance!");
+      }
+    }
+    saveSession(session);
+  }
 
   function updateGeo(){
     return new Promise(resolve => {
@@ -317,17 +347,11 @@
       payload.code  = code;
       payload.missed = 0;
       payload.score = total;
-      if(Math.random() < 0.5){
-        resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>Lucky you! You’ve earned a bonus round. Tap to play again!`;
-        setCooldown(0);
-      }else{
-        resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>Great job! You’ve won. Come back in 10 minutes for another chance!`;
-        setCooldown(15);
-      }
+      handleGameEnd('win');
+      resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>` + resultText.innerHTML;
     }else{
-      resultText.textContent = 'Thanks for playing! Please come back in 10 minutes to try again.';
       new QRCode(qrWrap,{text:"TIP: Blot, don't rub!",width:256,height:256});
-      setCooldown(10);
+      handleGameEnd('lose');
     }
     if(typeof google !== 'undefined'){
       google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
@@ -349,7 +373,10 @@
   }
 
   playBtn.addEventListener('click', () => {
-    if(!canPlay()) return;
+    if(!canPlayNow()){
+      showMessage("Please come back in 10 minutes to try again.");
+      return;
+    }
     if(geo){
       begin();
     }else{
@@ -363,7 +390,10 @@
     }
   });
   document.getElementById('restartBtn').addEventListener('click', () => {
-    if(!canPlay()) return;
+    if(!canPlayNow()){
+      showMessage("Please come back in 10 minutes to try again.");
+      return;
+    }
     resultScreen.classList.add('hidden');
     begin();
   });
