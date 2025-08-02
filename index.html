@@ -213,11 +213,7 @@
       if(remaining===0 && seconds>0) win();
     };
     if(IS_MOBILE){
-      let hold;
-      s.addEventListener('touchstart', () => {
-        hold = setTimeout(remove, 200); // longer hold on mobile
-      }, {passive:true});
-      s.addEventListener('touchend', () => clearTimeout(hold));
+      s.addEventListener('touchstart', remove, {passive:true});
     }else{
       s.addEventListener('pointerdown', remove);
     }
