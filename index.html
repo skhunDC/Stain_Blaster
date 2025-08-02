@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));}
-    #cannon{position:absolute;width:80px;height:80px;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:50;}
+    #cannon{position:absolute;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:50;}
     .bubble{position:absolute;pointer-events:none;}
     .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
     .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
@@ -193,9 +193,9 @@
     clearTimeout(bubbleTimer);
     startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
     gameArea.classList.remove('hidden');
-    gameArea.innerHTML = '';
-    gameArea.appendChild(timerEl);
-    gameArea.appendChild(cannon);
+    gameArea.querySelectorAll('.stain').forEach(s=>s.remove());
+    if(!gameArea.contains(timerEl)) gameArea.appendChild(timerEl);
+    if(!gameArea.contains(cannon)) gameArea.appendChild(cannon);
     remaining=0; total=0;
     for(let i=0;i<STAIN_START;i++) spawnStain();
     seconds = GAME_TIME;
