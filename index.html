@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <title>Stain Blaster – Dublin Cleaners</title>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    /* Simple red-blob stain */
+    .stain{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#B91C1C 0%,#7F1D1D 70%);}
+  </style>
+</head>
+<body class="h-full bg-white overflow-hidden">
+  <!-- Attract / Start Screen -->
+  <div id="startScreen" class="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-white touch-none select-none">
+    <img src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png" alt="Dublin Cleaners" class="w-56">
+    <div class="text-5xl font-bold text-stone-700 text-center leading-tight">Stain Blaster</div>
+    <div class="text-xl text-stone-500 text-center">Swipe the stains away in 15 seconds<br>and win an instant reward!</div>
+    <button id="playBtn" class="px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition">Play Now</button>
+  </div>
+
+  <!-- Game Area -->
+  <div id="gameArea" class="absolute inset-0 hidden bg-[url('https://images.unsplash.com/photo-1526178612255-2e6b012f47b3?auto=format&q=60&w=1080&h=1920&fit=crop')] bg-cover">
+    <!-- stains injected here -->
+    <div id="timer" class="absolute top-6 left-1/2 -translate-x-1/2 text-5xl font-bold text-white drop-shadow">15</div>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="resultScreen" class="absolute inset-0 hidden flex flex-col items-center justify-center gap-6 bg-white text-center">
+    <div id="resultText" class="text-4xl font-semibold text-stone-700"></div>
+    <div id="qrWrap" class="p-4 bg-stone-100 rounded-2xl shadow-inner"></div>
+    <button id="restartBtn" class="mt-8 px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition">
+      Play Again
+    </button>
+  </div>
+
+<script>
+(() => {
+  /* ----- Config ----- */
+  const GAME_TIME   = 15;                 // seconds
+  const STAIN_COUNT = 12;                 // stains to clear
+  const PRIZES      = [                   // cumulative probability table
+    {p:0.60, value:5},
+    {p:0.85, value:10},
+    {p:0.95, value:20},
+    {p:0.99, value:25},
+    {p:1.00, value:50}
+  ];
+
+  /* ----- DOM refs ----- */
+  const startScreen = document.getElementById('startScreen');
+  const gameArea    = document.getElementById('gameArea');
+  const timerEl     = document.getElementById('timer');
+  const resultScreen= document.getElementById('resultScreen');
+  const resultText  = document.getElementById('resultText');
+  const qrWrap      = document.getElementById('qrWrap');
+
+  let remaining, seconds, countdown, startTime;
+
+  /* Utility: weighted random prize */
+  function pickPrize(){
+    const r = Math.random();
+    return PRIZES.find(t => r <= t.p).value;
+  }
+
+  /* Spawn stains */
+  function spawnStains(){
+    for(let i=0;i<STAIN_COUNT;i++){
+      const s = document.createElement('div');
+      s.className = 'stain absolute';
+      const x = Math.random()*80+10;  // 10–90 vw
+      const y = Math.random()*70+15;  // 15–85 vh
+      s.style.left = x+'%';
+      s.style.top  = y+'%';
+      s.addEventListener('pointerdown', () => {
+        s.remove();
+        remaining--;
+        if(!remaining) win();
+      });
+      gameArea.appendChild(s);
+    }
+  }
+
+  /* Start game */
+  function begin(){
+    startScreen.classList.add('hidden');
+    gameArea.classList.remove('hidden');
+    gameArea.innerHTML = '';                     // clear old stains+timer
+    gameArea.appendChild(timerEl);
+    spawnStains();
+    remaining = STAIN_COUNT;
+    seconds   = GAME_TIME;
+    timerEl.textContent = seconds;
+    startTime = Date.now();
+    countdown = setInterval(()=>{
+      seconds--;
+      timerEl.textContent = seconds;
+      if(seconds<=0){ clearInterval(countdown); lose(); }
+    },1000);
+  }
+
+  /* Win flow */
+  function win(){
+    clearInterval(countdown);
+    showPrize(true);
+  }
+
+  /* Lose flow */
+  function lose(){
+    showPrize(false);
+  }
+
+  /* Show prize / try-again */
+  function showPrize(success){
+    gameArea.classList.add('hidden');
+    resultScreen.classList.remove('hidden');
+    qrWrap.innerHTML = '';
+    if(success){
+      const prize  = pickPrize();
+      const code   = `DCGC-${Date.now()}-${prize}`;
+      resultText.textContent = `Congrats! You won a $${prize} gift certificate 🎉`;
+      new QRCode(qrWrap, { text: code, width:256, height:256 });
+      confetti();
+      /* Log to Google Sheet */
+      if(typeof google !== 'undefined'){
+        google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify({
+          prize, code,
+          score: STAIN_COUNT,
+          duration: (Date.now()-startTime)/1000,
+          device:'kiosk'
+        }));
+      }
+    }else{
+      resultText.textContent = 'Nice try! Give it another go.';
+    }
+  }
+
+  /* Confetti burst */
+  function confetti(){
+    if(window.confetti){
+      window.confetti({particleCount:160, spread:90, origin:{y:0.6}});
+    }
+  }
+
+  /* Restart */
+  function reset(){
+    resultScreen.classList.add('hidden');
+    startScreen.classList.remove('hidden');
+  }
+
+  /* ----- Event hooks ----- */
+  document.getElementById('playBtn').addEventListener('click', begin);
+  document.getElementById('restartBtn').addEventListener('click', reset);
+
+  /* Idle reset after 30 s on result screen */
+  setInterval(()=>{
+    if(!resultScreen.classList.contains('hidden') &&
+       Date.now()-startTime > (GAME_TIME+30)*1000){
+      reset();
+    }
+  },5000);
+
+  /* Cache main assets for flaky Wi-Fi */
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+})();
+</script>
+
+<!-- Lightweight offline cache (inline for brevity) -->
+<script id="sw" type="text/worker">
+self.addEventListener('install',e=>{self.skipWaiting();});
+self.addEventListener('fetch',e=>{
+  e.respondWith(
+    caches.open('stainblaster-v1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{
+      if(res.ok){ c.put(e.request,res.clone()); }
+      return res;
+    })))
+  );
+});
+</script>
+</body>
+</html>
