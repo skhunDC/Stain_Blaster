@@ -86,10 +86,12 @@
   const playBtn     = document.getElementById('playBtn');
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer, geo = '';
 
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos => {
-      geo = `${pos.coords.latitude},${pos.coords.longitude}`;
-    }, () => { geo = ''; });
+  function updateGeo(){
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(pos => {
+        geo = `${pos.coords.latitude},${pos.coords.longitude}`;
+      }, () => { geo = ''; });
+    }
   }
 
   function pickPrize(){
@@ -201,6 +203,7 @@
     startScreen.classList.add('hidden');
     clearTimeout(bubbleTimer);
     startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
+    updateGeo();
     gameArea.classList.remove('hidden');
     gameArea.querySelectorAll('.stain').forEach(s=>s.remove());
     if(!gameArea.contains(timerEl)) gameArea.appendChild(timerEl);
