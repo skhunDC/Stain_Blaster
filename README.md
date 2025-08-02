@@ -27,10 +27,9 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 * Each streak shrinks stains ~20 %, adds ~15 % more splatters, and speeds the cannon by ~15 %.
 * Losing resets the streak and returns to base difficulty.
 
-## Fair Play Lock & Bonus Rounds
-* LocalStorage enforces a 10‑minute cooldown between plays on the same device.
-* Winners flip a virtual coin for an instant bonus round; if not selected they must wait 15 minutes.
-* Losses immediately show “Thanks for playing! Please come back in 10 minutes to try again.”
+## Replay Policy
+* Players can start a new round immediately after each game.
+* Consecutive wins continue to ramp difficulty to keep the challenge lively.
 
 ## Mobile Optimizations
 * Phones render smaller stains, spread them across a wider vertical range, and clear with a quick tap.

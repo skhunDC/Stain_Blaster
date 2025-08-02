@@ -125,42 +125,12 @@
     }
   }
 
-  function getSession(){
-    return JSON.parse(localStorage.getItem('gameSession')) || {};
-  }
-
-  function saveSession(s){
-    localStorage.setItem('gameSession', JSON.stringify(s));
-  }
-
-  function canPlayNow(){
-    const now = Date.now();
-    const session = getSession();
-    return !session.eligibleAt || now >= session.eligibleAt;
-  }
-
   function handleGameEnd(result){
-    const now = Date.now();
-    let session = getSession();
-    session.lastPlay = now;
-
     if(result === 'lose'){
-      session.winCount = 0;
-      session.eligibleAt = now + 10 * 60 * 1000;
-      showMessage("Thanks for playing! Please come back in 10 minutes to try again.");
+      showMessage("Thanks for playing! Tap Play Again to try once more.");
     } else if(result === 'win'){
-      const bonusChance = session.winCount === 0 ? 0.5 : 0.3;
-      const gotBonus = Math.random() < bonusChance;
-      if(gotBonus){
-        session.winCount = (session.winCount || 0) + 1;
-        showMessage("Lucky you! You’ve earned a bonus round. Tap to play again!");
-      } else {
-        session.winCount = 0;
-        session.eligibleAt = now + 10 * 60 * 1000;
-        showMessage("Great job! You’ve won. Come back in 10 minutes for another chance!");
-      }
+      showMessage("Great job! Tap Play Again for another round!");
     }
-    saveSession(session);
   }
 
   function updateGeo(){
@@ -381,27 +351,19 @@
   }
 
   playBtn.addEventListener('click', () => {
-    if(!canPlayNow()){
-      showMessage("Please come back in 10 minutes to try again.");
-      return;
-    }
     if(geo){
       begin();
-    }else{
+    } else {
       updateGeo().then(allowed => {
         if(allowed){
           begin();
-        }else{
+        } else {
           alert('Location access is required to play.');
         }
       });
     }
   });
   document.getElementById('restartBtn').addEventListener('click', () => {
-    if(!canPlayNow()){
-      showMessage("Please come back in 10 minutes to try again.");
-      return;
-    }
     resultScreen.classList.add('hidden');
     begin();
   });
