@@ -10,11 +10,11 @@ An ✨ 15-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 * **Google Sheets** – prize logging for marketing analytics.
 
 ## Quick Start
-1. Create (or reuse) a Google Sheet; note its ID.  
-2. In Apps Script, paste `Code.gs`, set `SHEET_ID`.  
-3. Add an **HTML** file named `index` and paste `index.html`.  
-4. **Deploy → New Web App** “Execute as Me”, “Anyone”, copy URL.  
-5. Point EloView/Yodeck to this URL (ensure portrait 1080×1920).  
+1. The provided `Code.gs` logs to [this Google Sheet](https://docs.google.com/spreadsheets/d/17k6TfJeAERydKa0L0vAXRp6y0q3zckB35dFv9qfDQ6g/edit) by default.
+2. If using a different spreadsheet, update the `SHEET_ID` constant in `Code.gs`.
+3. Add an **HTML** file named `index` and paste `index.html`.
+4. **Deploy → New Web App** “Execute as Me”, “Anyone”, copy URL.
+5. Point EloView/Yodeck to this URL (ensure portrait 1080×1920).
 
 ## Prize Odds
 Default odds live in `index.html`. To adjust without a push, expose them via `logGame` response or a `getConfig()` GAS endpoint, then fetch at runtime.
