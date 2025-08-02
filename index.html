@@ -129,22 +129,6 @@
   const playBtn     = document.getElementById('playBtn');
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer, geo = '';
 
-  function showMessage(msg){
-    if(resultScreen && !resultScreen.classList.contains('hidden')){
-      resultText.innerHTML = msg;
-    }else{
-      alert(msg);
-    }
-  }
-
-  function handleGameEnd(result){
-    if(result === 'lose'){
-      showMessage("Thanks for playing! Tap Play Again to try again.");
-    } else if(result === 'win'){
-      showMessage("Great job! Tap Play Again for another round!");
-    }
-  }
-
   function updateGeo(){
     return new Promise(resolve => {
       if(navigator.geolocation){
@@ -350,8 +334,7 @@
         payload.code  = code;
         payload.missed = 0;
         payload.score = total;
-        handleGameEnd('win');
-        resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>` + resultText.innerHTML;
+        resultText.textContent = `Congrats! You won a $${prize} gift certificate 🎉`;
         if(typeof google !== 'undefined'){
           google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
         }
@@ -364,11 +347,14 @@
       }
     }else{
       const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
-      handleGameEnd('lose');
-      const cooldownMsg = resultText.innerHTML;
-      resultText.innerHTML = "Thanks for playing! Here's a quick tip from your friends at Dublin Cleaners:";
-      qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md max-w-lg';
-      qrWrap.innerHTML = `<div class="text-xl text-stone-700 whitespace-pre-line">${tip}</div><div class="mt-4 text-stone-700">${cooldownMsg}</div>`;
+      resultText.textContent = 'Thanks for playing! Tap Play Again to try again.';
+      qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg';
+      const plainTip = tip.replace(/<[^>]+>/g,'');
+      new QRCode(qrWrap,{text:encodeForQR(plainTip),width:256,height:256});
+      const tipDiv = document.createElement('div');
+      tipDiv.className = 'text-xl text-stone-700 whitespace-pre-line';
+      tipDiv.innerHTML = tip;
+      qrWrap.appendChild(tipDiv);
       if(typeof google !== 'undefined'){
         google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
       }
