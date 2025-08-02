@@ -19,7 +19,7 @@ QR codes embed a plain-text voucher string (`DCGC-<epochMs>-<value>`), avoiding 
 * Losses display “Thanks for playing! Please come back in 10 minutes to try again.”
 
 ## Mobile Touch Tweaks
-* Phones render smaller stains, scatter them across a wider vertical range, and require a short (~200 ms) press before a stain disappears.
+* Phones render smaller stains, scatter them across a wider vertical range, and disappear with a quick tap.
 
 ## QR Rewards
 * Wins show a QR‑encoded voucher worth $5‑$50.

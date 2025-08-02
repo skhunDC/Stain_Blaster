@@ -33,7 +33,7 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 * Losses immediately show “Thanks for playing! Please come back in 10 minutes to try again.”
 
 ## Mobile Optimizations
-* Phones render smaller stains, spread them across a wider vertical range, and require a brief (~200 ms) press before a stain clears.
+* Phones render smaller stains, spread them across a wider vertical range, and clear with a quick tap.
 
 ## QR Rewards
 * Victories produce a QR‑encoded voucher worth $5‑$50.
