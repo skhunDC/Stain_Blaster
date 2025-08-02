@@ -7,7 +7,8 @@
  * 1.  Deploy as a Web App → “Execute as Me”, “Anyone”.
  * 2.  Add your Sheet ID below or create one named “StainBlasterLog”.
  */
-const SHEET_ID   = 'YOUR_SHEET_ID_HERE';   // ← update
+// Google Sheet used for logging game results
+const SHEET_ID   = '17k6TfJeAERydKa0L0vAXRp6y0q3zckB35dFv9qfDQ6g';
 const SHEET_NAME = 'StainBlasterLog';
 
 /** Serve the kiosk page */
