@@ -60,12 +60,12 @@
   let STAIN_START = BASE_STAIN_START;
   let STAIN_SIZE  = BASE_STAIN_SIZE;
   let FIRE_RATE   = BASE_FIRE_RATE;
-  let playCount   = parseInt(localStorage.getItem('playCount') || '0', 10);
+  let winStreak   = parseInt(localStorage.getItem('winStreak') || '0', 10);
 
   function applyDifficulty(){
-    STAIN_SIZE  = BASE_STAIN_SIZE / Math.pow(1.15, playCount);
-    STAIN_START = Math.round(BASE_STAIN_START * Math.pow(1.1, playCount));
-    FIRE_RATE   = BASE_FIRE_RATE * Math.pow(0.9, playCount);
+    STAIN_SIZE  = BASE_STAIN_SIZE / Math.pow(1.2, winStreak);
+    STAIN_START = Math.round(BASE_STAIN_START * Math.pow(1.15, winStreak));
+    FIRE_RATE   = BASE_FIRE_RATE * Math.pow(0.85, winStreak);
   }
   const STAIN_IMAGES = [
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Ketchup.png',
@@ -231,7 +231,6 @@
 
   function begin(){
     applyDifficulty();
-    localStorage.setItem('playCount', ++playCount);
     startScreen.classList.add('hidden');
     clearTimeout(bubbleTimer);
     startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
@@ -296,6 +295,8 @@
     if(typeof google !== 'undefined'){
       google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
     }
+    winStreak = success ? winStreak + 1 : 0;
+    localStorage.setItem('winStreak', winStreak);
   }
 
   function confetti(){
