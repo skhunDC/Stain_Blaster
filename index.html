@@ -7,7 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
-    .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));}
+    .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
     #cannon{position:absolute;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:50;}
     .bubble{position:absolute;pointer-events:none;}
     .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
@@ -150,7 +150,11 @@
       remaining--;
       if(remaining===0 && seconds>0) win();
     });
-    gameArea.appendChild(s);
+    if(gameArea.contains(cannon)){
+      gameArea.insertBefore(s, cannon);
+    }else{
+      gameArea.appendChild(s);
+    }
     remaining++; total++;
     return s;
   }
