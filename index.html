@@ -8,7 +8,9 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
-    #cannon{position:absolute;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:50;}
+    /* keep cannon layer above everything */
+    #ui-shell{position:fixed;inset:0;pointer-events:none;z-index:2147483647;}
+    #cannon{position:fixed;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:2147483647;}
     .bubble{position:absolute;pointer-events:none;}
     .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
     .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
@@ -83,6 +85,49 @@
   const qrWrap      = document.getElementById('qrWrap');
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
+  
+  // keep the cannon layer above other DOM updates
+  const bringCannonFront = () => {
+    if (document.body.lastElementChild !== uiShell) {
+      document.body.appendChild(uiShell);
+    }
+  };
+
+  // Periodically verify the cannon remains visible and properly positioned
+  const checkCannon = () => {
+    if (!document.body.contains(uiShell)) {
+      document.body.appendChild(uiShell);
+    }
+    if (!uiShell.contains(cannon)) {
+      const img = new Image();
+      img.id = 'cannon';
+      img.src = 'https://www.dublincleaners.com/wp-content/uploads/2025/08/Canon.png';
+      img.alt = 'cannon';
+      img.className = 'select-none';
+      uiShell.appendChild(img);
+      cannon = img;
+    }
+    const rect = cannon.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (rect.bottom < 0 || rect.right < 0 || rect.top > vh || rect.left > vw || rect.width === 0 || rect.height === 0) {
+      uiShell.style.position = 'fixed';
+      uiShell.style.inset = '0';
+      uiShell.style.pointerEvents = 'none';
+      uiShell.style.zIndex = '2147483647';
+      cannon.style.position = 'fixed';
+      cannon.style.display = 'block';
+      cannon.style.zIndex = '2147483647';
+      cannon.style.top = 'auto';
+      cannon.style.left = 'auto';
+      cannon.style.bottom = '1rem';
+      cannon.style.right = '1rem';
+      cannon.style.transform = 'rotate(0deg)';
+    }
+    bringCannonFront();
+  };
+  setInterval(checkCannon, 1000);
+  checkCannon();
 
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer;
 
