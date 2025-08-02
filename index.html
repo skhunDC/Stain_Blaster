@@ -298,13 +298,17 @@
   }
 
   playBtn.addEventListener('click', () => {
-    updateGeo().then(allowed => {
-      if(allowed){
-        begin();
-      }else{
-        alert('Location access is required to play.');
-      }
-    });
+    if(geo){
+      begin();
+    }else{
+      updateGeo().then(allowed => {
+        if(allowed){
+          begin();
+        }else{
+          alert('Location access is required to play.');
+        }
+      });
+    }
   });
   document.getElementById('restartBtn').addEventListener('click', reset);
 
