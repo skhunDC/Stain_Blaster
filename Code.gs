@@ -10,6 +10,15 @@
 // Google Sheet used for logging game results
 const SHEET_ID   = '17k6TfJeAERydKa0L0vAXRp6y0q3zckB35dFv9qfDQ6g';
 const SHEET_NAME = 'StainBlasterLog';
+const HEADERS = [
+  'Timestamp',
+  'Voucher code',
+  'Prize $',
+  'Stains cleared',
+  'Stains missed',
+  'Seconds taken',
+  'Device'
+];
 
 /** Serve the kiosk page */
 function doGet() {
@@ -22,16 +31,10 @@ function doGet() {
 function logGame(dataJSON) {
   const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow([
-      'Timestamp',
-      'Voucher code',
-      'Prize $',
-      'Stains cleared',
-      'Stains missed',
-      'Seconds taken',
-      'Device'
-    ]);
+  const existingHeaders = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+  if (existingHeaders.join('') === '') {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sheet.setFrozenRows(1); // keep headers visible
   }
   const d     = JSON.parse(dataJSON);
   sheet.appendRow([

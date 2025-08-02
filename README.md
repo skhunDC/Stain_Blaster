@@ -34,9 +34,17 @@ Default odds live in `index.html`. To adjust without a push, expose them via `lo
 | $50  | 1 %  |
 
 ## Sheet Schema
-| A              | B        | C     | D     | E      | F        | G     |
-| -------------- | -------- | ----- | ----- | ------ | -------- | ----- |
-| Timestamp      | Code     | Prize | Score | Missed | Duration | Device|
+Each play logs a row to the Google Sheet with the following columns:
+
+| Column | Header         | Purpose                                 |
+| ------ | -------------- | --------------------------------------- |
+| A      | Timestamp      | When the result was recorded            |
+| B      | Voucher code   | Unique voucher string (blank on loss)   |
+| C      | Prize $        | Dollar value awarded to the player      |
+| D      | Stains cleared | Number of stains the player removed     |
+| E      | Stains missed  | Stains left when time expired           |
+| F      | Seconds taken  | Duration of the game in seconds         |
+| G      | Device         | Source device label (e.g., kiosk)       |
 
 Monitor play counts, difficulty, and cost; pivot by day for prize budgeting.
 
