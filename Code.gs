@@ -22,6 +22,17 @@ function doGet() {
 function logGame(dataJSON) {
   const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      'Timestamp',
+      'Voucher code',
+      'Prize $',
+      'Stains cleared',
+      'Stains missed',
+      'Seconds taken',
+      'Device'
+    ]);
+  }
   const d     = JSON.parse(dataJSON);
   sheet.appendRow([
     new Date(),            // Timestamp
