@@ -7,8 +7,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
-    /* Simple red-blob stain */
-    .stain{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#B91C1C 0%,#7F1D1D 70%);}
+    .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));}
+    #cannon{position:absolute;width:80px;height:80px;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;}
   </style>
 </head>
 <body class="h-full bg-white overflow-hidden">
@@ -16,14 +16,15 @@
   <div id="startScreen" class="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-white touch-none select-none">
     <img src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png" alt="Dublin Cleaners" class="w-56">
     <div class="text-5xl font-bold text-stone-700 text-center leading-tight">Stain Blaster</div>
-    <div class="text-xl text-stone-500 text-center">Swipe the stains away in 15 seconds<br>and win an instant reward!</div>
+    <div class="text-xl text-stone-500 text-center">Swipe the stains away in 12 seconds<br>and win an instant reward!</div>
     <button id="playBtn" class="px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition">Play Now</button>
   </div>
 
   <!-- Game Area -->
-  <div id="gameArea" class="absolute inset-0 hidden bg-[url('https://images.unsplash.com/photo-1526178612255-2e6b012f47b3?auto=format&q=60&w=1080&h=1920&fit=crop')] bg-cover">
+  <div id="gameArea" class="absolute inset-0 hidden bg-[url('https://www.dublincleaners.com/wp-content/uploads/2025/08/Whiteshirt.png')] bg-cover">
     <!-- stains injected here -->
-    <div id="timer" class="absolute top-6 left-1/2 -translate-x-1/2 text-5xl font-bold text-white drop-shadow">15</div>
+    <div id="timer" class="absolute top-6 left-1/2 -translate-x-1/2 text-5xl font-bold text-white drop-shadow">12</div>
+    <img id="cannon" src="https://www.pngall.com/wp-content/uploads/2017/01/Cannon-PNG-Picture.png" alt="cannon" class="select-none">
   </div>
 
   <!-- Result Screen -->
@@ -38,8 +39,15 @@
 <script>
 (() => {
   /* ----- Config ----- */
-  const GAME_TIME   = 15;                 // seconds
-  const STAIN_COUNT = 12;                 // stains to clear
+  const GAME_TIME   = 12;                 // seconds
+  const STAIN_START = 15;                 // initial stains
+  const STAIN_SIZE  = 90;                 // px
+  const FIRE_RATE   = 3000;               // ms per extra stain
+  const STAIN_IMAGES = [
+    'https://www.pngall.com/wp-content/uploads/5/Ketchup-Stain-PNG.png',
+    'https://www.pngall.com/wp-content/uploads/5/Coffee-Stain-PNG-Free-Download.png',
+    'https://www.pngall.com/wp-content/uploads/5/Red-Wine-Stain-PNG-HD.png'
+  ];
   const PRIZES      = [                   // cumulative probability table
     {p:0.60, value:5},
     {p:0.85, value:10},
@@ -52,108 +60,150 @@
   const startScreen = document.getElementById('startScreen');
   const gameArea    = document.getElementById('gameArea');
   const timerEl     = document.getElementById('timer');
+  const cannon      = document.getElementById('cannon');
   const resultScreen= document.getElementById('resultScreen');
   const resultText  = document.getElementById('resultText');
   const qrWrap      = document.getElementById('qrWrap');
 
-  let remaining, seconds, countdown, startTime;
+  let remaining, total, seconds, countdown, startTime, fireInterval;
 
-  /* Utility: weighted random prize */
   function pickPrize(){
     const r = Math.random();
     return PRIZES.find(t => r <= t.p).value;
   }
 
-  /* Spawn stains */
-  function spawnStains(){
-    for(let i=0;i<STAIN_COUNT;i++){
-      const s = document.createElement('div');
-      s.className = 'stain absolute';
-      const x = Math.random()*80+10;  // 10–90 vw
-      const y = Math.random()*70+15;  // 15–85 vh
-      s.style.left = x+'%';
-      s.style.top  = y+'%';
-      s.addEventListener('pointerdown', () => {
-        s.remove();
-        remaining--;
-        if(!remaining) win();
-      });
-      gameArea.appendChild(s);
-    }
+  function randomImage(){
+    return STAIN_IMAGES[Math.floor(Math.random()*STAIN_IMAGES.length)];
   }
 
-  /* Start game */
+  function spawnStain(x,y){
+    const s = document.createElement('img');
+    s.src = randomImage();
+    s.className = 'stain';
+    const rect = gameArea.getBoundingClientRect();
+    if(x===undefined){ x = Math.random()*(rect.width - STAIN_SIZE); }
+    if(y===undefined){ y = Math.random()*(rect.height - STAIN_SIZE - 100) + 50; }
+    s.style.left = x+'px';
+    s.style.top  = y+'px';
+    s.addEventListener('pointerdown',()=>{
+      s.remove();
+      remaining--;
+      if(remaining===0 && seconds>0) win();
+    });
+    gameArea.appendChild(s);
+    remaining++; total++;
+    return s;
+  }
+
+  function animateProjectile(el,x0,y0,x1,y1){
+    const duration = 800;
+    const arc = 150;
+    const start = performance.now();
+    function frame(now){
+      const t = Math.min((now-start)/duration,1);
+      const x = x0 + (x1-x0)*t;
+      const y = y0 + (y1-y0)*t - arc*Math.sin(Math.PI*t);
+      el.style.left = x+'px';
+      el.style.top  = y+'px';
+      if(t<1){
+        requestAnimationFrame(frame);
+      }else{
+        el.style.left = x1+'px';
+        el.style.top  = y1+'px';
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function fireCannon(){
+    const rect = cannon.getBoundingClientRect();
+    const area = gameArea.getBoundingClientRect();
+    const startX = rect.left + rect.width*0.2 - area.left;
+    const startY = rect.top  + rect.height*0.2 - area.top;
+    const targetX = Math.random()*(area.width - STAIN_SIZE);
+    const targetY = Math.random()*(area.height - STAIN_SIZE - 100) + 50;
+    const angle = Math.atan2(targetY - startY, targetX - startX);
+    cannon.style.transform = `rotate(${angle}rad)`;
+    const s = spawnStain(startX, startY);
+    animateProjectile(s,startX,startY,targetX,targetY);
+  }
+
   function begin(){
     startScreen.classList.add('hidden');
     gameArea.classList.remove('hidden');
-    gameArea.innerHTML = '';                     // clear old stains+timer
+    gameArea.innerHTML = '';
     gameArea.appendChild(timerEl);
-    spawnStains();
-    remaining = STAIN_COUNT;
-    seconds   = GAME_TIME;
+    gameArea.appendChild(cannon);
+    remaining=0; total=0;
+    for(let i=0;i<STAIN_START;i++) spawnStain();
+    seconds = GAME_TIME;
     timerEl.textContent = seconds;
     startTime = Date.now();
     countdown = setInterval(()=>{
       seconds--;
       timerEl.textContent = seconds;
-      if(seconds<=0){ clearInterval(countdown); lose(); }
+      if(seconds<=0){
+        clearInterval(countdown);
+        clearInterval(fireInterval);
+        lose();
+      }
     },1000);
+    fireInterval = setInterval(fireCannon, FIRE_RATE);
   }
 
-  /* Win flow */
   function win(){
     clearInterval(countdown);
-    showPrize(true);
+    clearInterval(fireInterval);
+    showResult(true);
   }
 
-  /* Lose flow */
   function lose(){
-    showPrize(false);
+    showResult(false);
   }
 
-  /* Show prize / try-again */
-  function showPrize(success){
+  function showResult(success){
     gameArea.classList.add('hidden');
     resultScreen.classList.remove('hidden');
     qrWrap.innerHTML = '';
+    const payload = {
+      prize:0, code:'',
+      score: total - remaining,
+      missed: remaining,
+      duration: (Date.now()-startTime)/1000,
+      device:'kiosk'
+    };
     if(success){
-      const prize  = pickPrize();
-      const code   = `DCGC-${Date.now()}-${prize}`;
+      const prize = pickPrize();
+      const code  = `DCGC-${Date.now()}-${prize}`;
       resultText.textContent = `Congrats! You won a $${prize} gift certificate 🎉`;
-      new QRCode(qrWrap, { text: code, width:256, height:256 });
+      new QRCode(qrWrap,{text:code,width:256,height:256});
       confetti();
-      /* Log to Google Sheet */
-      if(typeof google !== 'undefined'){
-        google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify({
-          prize, code,
-          score: STAIN_COUNT,
-          duration: (Date.now()-startTime)/1000,
-          device:'kiosk'
-        }));
-      }
+      payload.prize = prize;
+      payload.code  = code;
+      payload.missed = 0;
+      payload.score = total;
     }else{
       resultText.textContent = 'Nice try! Give it another go.';
     }
+    if(typeof google !== 'undefined'){
+      google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
+    }
   }
 
-  /* Confetti burst */
   function confetti(){
     if(window.confetti){
       window.confetti({particleCount:160, spread:90, origin:{y:0.6}});
     }
   }
 
-  /* Restart */
   function reset(){
     resultScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
   }
 
-  /* ----- Event hooks ----- */
   document.getElementById('playBtn').addEventListener('click', begin);
   document.getElementById('restartBtn').addEventListener('click', reset);
 
-  /* Idle reset after 30 s on result screen */
   setInterval(()=>{
     if(!resultScreen.classList.contains('hidden') &&
        Date.now()-startTime > (GAME_TIME+30)*1000){
@@ -161,7 +211,6 @@
     }
   },5000);
 
-  /* Cache main assets for flaky Wi-Fi */
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
