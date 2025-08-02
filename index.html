@@ -10,7 +10,7 @@
     .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
     /* keep cannon layer above everything */
     #ui-shell{position:fixed;inset:0;pointer-events:none;z-index:2147483647;}
-    #cannon{position:fixed;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:inherit;}
+    #cannon{position:fixed;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:2147483647;}
     .bubble{position:absolute;pointer-events:none;}
     .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
     .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
@@ -116,7 +116,13 @@
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     if (rect.bottom < 0 || rect.right < 0 || rect.top > vh || rect.left > vw || rect.width === 0 || rect.height === 0) {
+      uiShell.style.position = 'fixed';
+      uiShell.style.inset = '0';
+      uiShell.style.pointerEvents = 'none';
+      uiShell.style.zIndex = '2147483647';
+      cannon.style.position = 'fixed';
       cannon.style.display = 'block';
+      cannon.style.zIndex = '2147483647';
       cannon.style.top = 'auto';
       cannon.style.left = 'auto';
       cannon.style.bottom = '1rem';
