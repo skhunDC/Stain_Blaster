@@ -83,7 +83,13 @@
   const qrWrap      = document.getElementById('qrWrap');
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
-  let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer;
+  let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer, geo = '';
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos => {
+      geo = `${pos.coords.latitude},${pos.coords.longitude}`;
+    }, () => { geo = ''; });
+  }
 
   function pickPrize(){
     const r = Math.random();
@@ -235,7 +241,8 @@
       score: total - remaining,
       missed: remaining,
       duration: (Date.now()-startTime)/1000,
-      device:'kiosk'
+      device:'kiosk',
+      geo
     };
     if(success){
       const prize = pickPrize();
