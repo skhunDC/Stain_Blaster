@@ -8,9 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
-    /* keep cannon layer above everything */
-    #ui-shell{position:fixed;inset:0;pointer-events:none;z-index:2147483647;}
-    #cannon{position:fixed;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:2147483647;}
+    #cannon{position:absolute;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:50;}
     .bubble{position:absolute;pointer-events:none;}
     .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
     .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
@@ -31,10 +29,6 @@
   <div id="gameArea" class="absolute inset-0 hidden bg-[url('https://www.dublincleaners.com/wp-content/uploads/2025/08/Whiteshirt.png')] bg-cover">
     <!-- stains injected here -->
     <div id="timer" class="absolute top-6 left-1/2 -translate-x-1/2 text-5xl font-bold text-white drop-shadow">12</div>
-  </div>
-
-  <!-- Game UI Shell -->
-  <div id="ui-shell">
     <img id="cannon" src="https://www.dublincleaners.com/wp-content/uploads/2025/08/Canon.png" alt="cannon" class="select-none">
   </div>
 
@@ -83,14 +77,12 @@
   const startScreen = document.getElementById('startScreen');
   const gameArea    = document.getElementById('gameArea');
   const timerEl     = document.getElementById('timer');
-  const uiShell     = document.getElementById('ui-shell');
-  let cannon        = document.getElementById('cannon');
+  const cannon      = document.getElementById('cannon');
   const resultScreen= document.getElementById('resultScreen');
   const resultText  = document.getElementById('resultText');
   const qrWrap      = document.getElementById('qrWrap');
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
-
   // keep the cannon layer above other DOM updates
   const bringCannonFront = () => {
     if (document.body.lastElementChild !== uiShell) {
@@ -133,7 +125,6 @@
   };
   setInterval(checkCannon, 1000);
   checkCannon();
-
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer;
 
   function pickPrize(){
@@ -201,7 +192,6 @@
       if(remaining===0 && seconds>0) win();
     });
     gameArea.appendChild(s);
-    bringCannonFront();
     remaining++; total++;
     return s;
   }
@@ -243,7 +233,6 @@
   }
 
   function begin(){
-    bringCannonFront();
     startScreen.classList.add('hidden');
     clearTimeout(bubbleTimer);
     startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
@@ -311,12 +300,10 @@
   function confetti(){
     if(window.confetti){
       window.confetti({particleCount:160, spread:90, origin:{y:0.6}, zIndex:1});
-      bringCannonFront();
     }
   }
 
   function reset(){
-    bringCannonFront();
     resultScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
     scheduleBubble();
