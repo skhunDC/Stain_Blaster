@@ -116,6 +116,11 @@
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     if (rect.bottom < 0 || rect.right < 0 || rect.top > vh || rect.left > vw || rect.width === 0 || rect.height === 0) {
+      uiShell.style.position = 'fixed';
+      uiShell.style.inset = '0';
+      uiShell.style.pointerEvents = 'none';
+      uiShell.style.zIndex = '2147483647';
+      cannon.style.position = 'fixed';
       cannon.style.display = 'block';
       cannon.style.top = 'auto';
       cannon.style.left = 'auto';
