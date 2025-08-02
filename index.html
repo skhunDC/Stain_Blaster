@@ -50,13 +50,23 @@
 (() => {
   /* ----- Config ----- */
   const GAME_TIME   = 12;                 // seconds
-  const STAIN_START = 23;                 // initial stains (50% more)
   const IS_MOBILE   = window.innerWidth <= 414;
-  let   STAIN_SIZE  = IS_MOBILE ? 68 : 90; // px (smaller on phones)
+  const BASE_STAIN_START = 23;           // initial stains (50% more)
+  const BASE_STAIN_SIZE  = IS_MOBILE ? 68 : 90; // px (smaller on phones)
+  const BASE_FIRE_RATE   = IS_MOBILE ? 1500 : 3000; // ms per extra stain (faster on phones)
   const TOP_MARGIN    = IS_MOBILE ? 10 : 50;
   const BOTTOM_MARGIN = IS_MOBILE ? 30 : 100;
-  const FIRE_RATE   = IS_MOBILE ? 1500 : 3000; // ms per extra stain (faster on phones)
   const DEVICE      = IS_MOBILE ? 'mobile' : 'kiosk';
+  let STAIN_START = BASE_STAIN_START;
+  let STAIN_SIZE  = BASE_STAIN_SIZE;
+  let FIRE_RATE   = BASE_FIRE_RATE;
+  let playCount   = parseInt(localStorage.getItem('playCount') || '0', 10);
+
+  function applyDifficulty(){
+    STAIN_SIZE  = BASE_STAIN_SIZE / Math.pow(1.15, playCount);
+    STAIN_START = Math.round(BASE_STAIN_START * Math.pow(1.1, playCount));
+    FIRE_RATE   = BASE_FIRE_RATE * Math.pow(0.9, playCount);
+  }
   const STAIN_IMAGES = [
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Ketchup.png',
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Coffee.png',
@@ -220,6 +230,8 @@
   }
 
   function begin(){
+    applyDifficulty();
+    localStorage.setItem('playCount', ++playCount);
     startScreen.classList.add('hidden');
     clearTimeout(bubbleTimer);
     startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
