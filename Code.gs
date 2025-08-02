@@ -18,7 +18,7 @@ const HEADERS = [
   'Stains missed',
   'Seconds taken',
   'Device',
-  'Geo'
+  'Geo location'
 ];
 
 /** Serve the kiosk page */
@@ -32,8 +32,13 @@ function doGet() {
 function logGame(dataJSON) {
   const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
-  const existingHeaders = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
-  if (existingHeaders.join('') === '') {
+  const existingHeaders = sheet
+    .getRange(1, 1, 1, Math.max(sheet.getLastColumn(), HEADERS.length))
+    .getValues()[0];
+  const headersMismatch = existingHeaders
+    .slice(0, HEADERS.length)
+    .some((h, i) => h !== HEADERS[i]);
+  if (existingHeaders.length < HEADERS.length || headersMismatch) {
     sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
     sheet.setFrozenRows(1); // keep headers visible
   }
