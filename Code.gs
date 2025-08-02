@@ -61,3 +61,55 @@ function logGame(dataJSON) {
 function getServerTime(){
   return Date.now();
 }
+
+// ----- Win Streak Helpers -----
+// Prize ladder: attempt to climb for bigger credits on consecutive wins.
+const prizeTable = [
+  {chance: 0.50, credit:  5},
+  {chance: 0.25, credit: 10},
+  {chance: 0.25, credit: 25},
+  {chance: 0.10, credit: 50},
+];
+
+/**
+ * Refresh win streak timer at game start. If more than five minutes have
+ * elapsed since the last play, the streak (difficulty) resets. Returns the
+ * current streak value so the client can adjust difficulty immediately.
+ */
+function refreshStreakTimer(){
+  const props   = PropertiesService.getUserProperties();
+  const lastWin = Number(props.getProperty('lastPlayTs') || 0);
+  if(Date.now() - lastWin > 5 * 60 * 1000){
+    props.deleteProperty('winStreak');
+  }
+  props.setProperty('lastPlayTs', Date.now());
+  return Number(props.getProperty('winStreak') || 0);
+}
+
+/**
+ * Handle a completed win. Depending on the current streak, the player has a
+ * chance to earn a larger credit and advance up the ladder. Failure still
+ * counts as a normal win; the streak resets to zero.
+ *
+ * Returns an object {success:Boolean, prize:Number, winStreak:Number} where
+ * `success` indicates a ladder hit and `prize` is the credit to award.
+ */
+function handleWin(){
+  const props = PropertiesService.getUserProperties();
+  const idx   = Number(props.getProperty('winStreak') || 0);
+  const tier  = prizeTable[Math.min(idx, prizeTable.length - 1)];
+
+  if(Math.random() < tier.chance){
+    // SUCCESS ➜ prize path
+    if(idx >= prizeTable.length - 1){
+      props.deleteProperty('winStreak');
+      return {success:true, prize:tier.credit, winStreak:0};
+    }
+    props.setProperty('winStreak', idx + 1);
+    return {success:true, prize:tier.credit, winStreak:idx + 1};
+  }else{
+    // FAIL ➜ normal win
+    props.deleteProperty('winStreak');
+    return {success:false, prize:0, winStreak:0};
+  }
+}

@@ -58,17 +58,10 @@
   const TOP_MARGIN    = IS_MOBILE ? 10 : 50;
   const BOTTOM_MARGIN = IS_MOBILE ? 30 : 100;
   const DEVICE      = IS_MOBILE ? 'mobile' : 'kiosk';
-  const STREAK_WINDOW = 5 * 60 * 1000;    // 5 minutes
   let STAIN_START = BASE_STAIN_START;
   let STAIN_SIZE  = BASE_STAIN_SIZE;
   let FIRE_RATE   = BASE_FIRE_RATE;
-  let winStreak   = parseInt(localStorage.getItem('winStreak') || '0', 10);
-  let streakTime  = parseInt(localStorage.getItem('winStreakTime') || '0', 10);
-  if(!streakTime || Date.now() - streakTime > STREAK_WINDOW){
-    winStreak = 0;
-    localStorage.setItem('winStreak', '0');
-    localStorage.setItem('winStreakTime', Date.now().toString());
-  }
+  let winStreak   = 0;
   let timeOffset  = 0;                        // server vs client clock diff
 
   if(typeof google !== 'undefined'){
@@ -283,6 +276,14 @@
     animateProjectile(s,startX,startY,targetX,targetY);
   }
 
+  function startRound(){
+    if(typeof google !== 'undefined'){
+      google.script.run.withSuccessHandler(s=>{winStreak=s; begin();}).refreshStreakTimer();
+    }else{
+      begin();
+    }
+  }
+
   function begin(){
     applyDifficulty();
     startScreen.classList.add('hidden');
@@ -335,16 +336,32 @@
       geo
     };
     if(success){
-      const prize = pickPrize();
-      const code  = `DCGC-${Date.now()}-${prize}`;
-      new QRCode(qrWrap,{text:encodeForQR(code),width:256,height:256});
-      confetti();
-      payload.prize = prize;
-      payload.code  = code;
-      payload.missed = 0;
-      payload.score = total;
-      handleGameEnd('win');
-      resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>` + resultText.innerHTML;
+      const handle = res => {
+        let prize;
+        if(res && res.success){
+          prize = res.prize;
+        }else{
+          prize = pickPrize();
+        }
+        const code  = `DCGC-${Date.now()}-${prize}`;
+        new QRCode(qrWrap,{text:encodeForQR(code),width:256,height:256});
+        confetti();
+        payload.prize = prize;
+        payload.code  = code;
+        payload.missed = 0;
+        payload.score = total;
+        handleGameEnd('win');
+        resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>` + resultText.innerHTML;
+        if(typeof google !== 'undefined'){
+          google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
+        }
+        winStreak = res ? res.winStreak : 0;
+      };
+      if(typeof google !== 'undefined'){
+        google.script.run.withSuccessHandler(handle).handleWin();
+      }else{
+        handle({success:false, winStreak:0});
+      }
     }else{
       const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
       handleGameEnd('lose');
@@ -352,13 +369,11 @@
       resultText.innerHTML = "Thanks for playing! Here's a quick tip from your friends at Dublin Cleaners:";
       qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md max-w-lg';
       qrWrap.innerHTML = `<div class="text-xl text-stone-700 whitespace-pre-line">${tip}</div><div class="mt-4 text-stone-700">${cooldownMsg}</div>`;
+      if(typeof google !== 'undefined'){
+        google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
+      }
+      winStreak = 0;
     }
-    if(typeof google !== 'undefined'){
-      google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
-    }
-    winStreak = success ? winStreak + 1 : 0;
-    localStorage.setItem('winStreak', winStreak);
-    localStorage.setItem('winStreakTime', Date.now().toString());
   }
 
   function confetti(){
@@ -375,11 +390,11 @@
 
   playBtn.addEventListener('click', () => {
     if(geo){
-      begin();
+      startRound();
     } else {
       updateGeo().then(allowed => {
         if(allowed){
-          begin();
+          startRound();
         } else {
           alert('Location access is required to play.');
         }
@@ -388,7 +403,7 @@
   });
   document.getElementById('restartBtn').addEventListener('click', () => {
     resultScreen.classList.add('hidden');
-    begin();
+    startRound();
   });
 
   scheduleBubble();

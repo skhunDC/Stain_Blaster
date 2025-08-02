@@ -26,7 +26,7 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 * Consecutive wins ramp up the challenge.
 * Each streak shrinks stains ~20 %, adds ~15 % more splatters, and speeds the cannon by ~15 %.
 * Losing resets the streak and returns to base difficulty.
-* Streak resets after 5 minutes of inactivity on the same device.
+* Streak resets after 5 minutes of inactivity but never blocks play.
 
 ## Replay Policy
 * Players can start a new round immediately after each game.
@@ -43,13 +43,17 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 ## Prize Odds
 Default odds live in `index.html`. To adjust without a push, expose them via `logGame` response or a `getConfig()` GAS endpoint, then fetch at runtime.
 
-| Prize | Odds |
-|-------|------|
-| $5   | 60 % |
-| $10  | 25 % |
-| $20  | 10 % |
-| $25  | 4 %  |
-| $50  | 1 %  |
+### Ladder Bonuses
+Consecutive wins unlock a bonus ladder with its own probabilities:
+
+| winStreak | Bonus Credit | Chance |
+|-----------|--------------|-------|
+| 0         | $5           | 50 %  |
+| 1         | $10          | 25 %  |
+| 2         | $25          | 25 %  |
+| 3         | $50          | 10 %  |
+
+Failing a ladder roll still awards a normal prize and resets the streak.
 
 ## Sheet Schema
 Each play logs a row to the Google Sheet with the following columns:
