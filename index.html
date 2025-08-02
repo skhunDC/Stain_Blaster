@@ -110,11 +110,17 @@
   const BUBBLE_INTERVAL = 4000; // ms between spawns
   const BUBBLE_JITTER   = 1000; // ms random jitter
   const BUBBLE_DURATION = 5000; // ms visible
-  const LOSS_TIPS = [
-    {label:'Misleading Label QR Tip', tip:'TIP: Test a hidden seam—when in doubt, obey the tag.'},
-    {label:'Wrinkle Waster QR Tip', tip:'TIP: Hang shirts in the shower—steam irons for free.'},
-    {label:'Late to Laundry QR Tip', tip:'TIP: Set an app reminder; our van won’t guess.'},
-    {label:'Mysterious Lint Monster QR Tip', tip:'TIP: Empty the lint tray—your dryer isn’t a Hoover.'}
+  const cleaningTips = [
+    "🧼 <strong>Always blot, never rub</strong>\nSpilled wine or coffee? Gently blot with a clean white cloth—rubbing pushes the stain deeper and can damage delicate fibers.",
+    "🚫 <strong>Skip the DIY vinegar on silk</strong>\nNatural doesn’t always mean safe. For fine fabrics like silk or wool, avoid vinegar or baking soda—let a textile expert handle it.",
+    "👗 <strong>Use garment bags for more than travel</strong>\nProtect your cashmere, gowns, and couture pieces with breathable garment bags—especially in humid or scented closets.",
+    "⏱️ <strong>Treat stains fast—but gently</strong>\nIf you can’t get to us right away, lightly dampen the stain with cold water. Don’t apply heat or soap—it could set the stain permanently.",
+    "🌬️ <strong>Air out, don’t over-wash</strong>\nFor suits, coats, and dresses, let them breathe between wears. Over-cleaning can shorten the life of premium fabrics.",
+    "📎 <strong>Dry cleaning tags go on the hanger, not the sleeve</strong>\nKeep those paper sleeves off your garments. We return items pressed and ready—hang them, store them, wear them.",
+    "💨 <strong>Use a steamer, not an iron</strong>\nSteaming is gentler on delicate fabrics and helps preserve the finish. Perfect for touch-ups between professional cleanings.",
+    "👔 <strong>Mind your collars and cuffs</strong>\nThese spots collect oils, makeup, and sweat. If you want your shirts to last longer, pre-treat them or clean them more often.",
+    "🪵 <strong>Skip the wire hangers</strong>\nInvest in wooden or padded hangers. Wire hangers can misshape shoulders and leave rust or stretch marks.",
+    "🌱 <strong>Eco-cleaning matters—ask your cleaner</strong>\nAt Dublin Cleaners, we use biodegradable solvents that are gentle on fabrics and the planet. Garment care without the guilt."
   ];
 
   /* ----- DOM refs ----- */
@@ -139,7 +145,7 @@
 
   function handleGameEnd(result){
     if(result === 'lose'){
-      showMessage("Thanks for playing! Tap Play Again to try once more.");
+      showMessage("Please come back in 10 minutes to try again.");
     } else if(result === 'win'){
       showMessage("Great job! Tap Play Again for another round!");
     }
@@ -318,6 +324,7 @@
     gameArea.classList.add('hidden');
     resultScreen.classList.remove('hidden');
     qrWrap.innerHTML = '';
+    qrWrap.className = 'p-4 bg-stone-100 rounded-2xl shadow-inner';
     const payload = {
       prize:0, code:'',
       score: total - remaining,
@@ -338,10 +345,12 @@
       handleGameEnd('win');
       resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>` + resultText.innerHTML;
     }else{
-      const pick = LOSS_TIPS[Math.floor(Math.random()*LOSS_TIPS.length)];
+      const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
       handleGameEnd('lose');
-      resultText.innerHTML = `${pick.label}<br>${resultText.innerHTML}`;
-      new QRCode(qrWrap,{text:encodeForQR(pick.tip),width:256,height:256});
+      const cooldownMsg = resultText.innerHTML;
+      resultText.innerHTML = "Thanks for playing! Here's a quick tip from your friends at Dublin Cleaners:";
+      qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md max-w-lg';
+      qrWrap.innerHTML = `<div class="text-xl text-stone-700 whitespace-pre-line">${tip}</div><div class="mt-4 text-stone-700">${cooldownMsg}</div>`;
     }
     if(typeof google !== 'undefined'){
       google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
