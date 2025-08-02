@@ -26,6 +26,7 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 * Consecutive wins ramp up the challenge.
 * Each streak shrinks stains ~20 %, adds ~15 % more splatters, and speeds the cannon by ~15 %.
 * Losing resets the streak and returns to base difficulty.
+* Streak resets after 5 minutes of inactivity on the same device.
 
 ## Replay Policy
 * Players can start a new round immediately after each game.

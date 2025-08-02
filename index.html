@@ -57,10 +57,17 @@
   const TOP_MARGIN    = IS_MOBILE ? 10 : 50;
   const BOTTOM_MARGIN = IS_MOBILE ? 30 : 100;
   const DEVICE      = IS_MOBILE ? 'mobile' : 'kiosk';
+  const STREAK_WINDOW = 5 * 60 * 1000;    // 5 minutes
   let STAIN_START = BASE_STAIN_START;
   let STAIN_SIZE  = BASE_STAIN_SIZE;
   let FIRE_RATE   = BASE_FIRE_RATE;
   let winStreak   = parseInt(localStorage.getItem('winStreak') || '0', 10);
+  let streakTime  = parseInt(localStorage.getItem('winStreakTime') || '0', 10);
+  if(!streakTime || Date.now() - streakTime > STREAK_WINDOW){
+    winStreak = 0;
+    localStorage.setItem('winStreak', '0');
+    localStorage.setItem('winStreakTime', Date.now().toString());
+  }
   let timeOffset  = 0;                        // server vs client clock diff
 
   if(typeof google !== 'undefined'){
@@ -336,6 +343,7 @@
     }
     winStreak = success ? winStreak + 1 : 0;
     localStorage.setItem('winStreak', winStreak);
+    localStorage.setItem('winStreakTime', Date.now().toString());
   }
 
   function confetti(){
