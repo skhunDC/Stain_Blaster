@@ -56,3 +56,8 @@ function logGame(dataJSON) {
   ]);
   return true;
 }
+
+/** Provide server timestamp so clients can't bypass cooldown by changing device clock */
+function getServerTime(){
+  return Date.now();
+}

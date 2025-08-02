@@ -13,6 +13,18 @@ Weighted probabilities (60 % → $5, 25 % → $10, 10 % → $20, 4 % → $25, 1 
 ## QR Content
 QR codes embed a plain-text voucher string (`DCGC-<epochMs>-<value>`), avoiding URL requirements yet uniquely identifying each win.
 
+## Fair Play & Bonus Rounds
+* LocalStorage tracks `nextPlay` so each device can run the game only once every 10 minutes.
+* Winners get a 50 % coin‑flip for an instant bonus round; otherwise a 15 minute cooldown with a friendly heads‑up.
+* Losses display “Thanks for playing! Please come back in 10 minutes to try again.”
+
+## Mobile Touch Tweaks
+* Phones render smaller stains, scatter them across a wider vertical range, and require a short (~200 ms) press before a stain disappears.
+
+## QR Rewards
+* Wins show a QR‑encoded voucher worth $5‑$50.
+* Losses still present a QR with a quick cleaning tip to reinforce eco expertise.
+
 ## Offline Resilience
 A 10-line service-worker caches Tailwind CDN, images, and QR/confetti libraries so the kiosk keeps running during Wi-Fi hiccups.
 

@@ -61,6 +61,29 @@
   let STAIN_SIZE  = BASE_STAIN_SIZE;
   let FIRE_RATE   = BASE_FIRE_RATE;
   let winStreak   = parseInt(localStorage.getItem('winStreak') || '0', 10);
+  let timeOffset  = 0;                        // server vs client clock diff
+
+  if(typeof google !== 'undefined'){
+    google.script.run.withSuccessHandler(t=>{timeOffset = t - Date.now();}).getServerTime();
+  }
+
+  function now(){ return Date.now() + timeOffset; }
+  function setCooldown(mins){
+    if(mins<=0){
+      localStorage.removeItem('nextPlay');
+    }else{
+      localStorage.setItem('nextPlay', now() + mins*60*1000);
+    }
+  }
+  function canPlay(){
+    const next = parseInt(localStorage.getItem('nextPlay') || '0',10);
+    if(now() < next){
+      const wait = Math.ceil((next - now())/60000);
+      alert(`Please come back in ${wait} minute${wait!==1?'s':''} to try again.`);
+      return false;
+    }
+    return true;
+  }
 
   function applyDifficulty(){
     STAIN_SIZE  = BASE_STAIN_SIZE / Math.pow(1.2, winStreak);
@@ -183,11 +206,21 @@
     s.style.top    = y+'px';
     s.style.width  = STAIN_SIZE+'px';
     s.style.height = STAIN_SIZE+'px';
-    s.addEventListener('pointerdown',()=>{
+    s.style.transform = `rotate(${Math.random()*360}deg)`;
+    const remove = () => {
       s.remove();
       remaining--;
       if(remaining===0 && seconds>0) win();
-    });
+    };
+    if(IS_MOBILE){
+      let hold;
+      s.addEventListener('touchstart', () => {
+        hold = setTimeout(remove, 200); // longer hold on mobile
+      }, {passive:true});
+      s.addEventListener('touchend', () => clearTimeout(hold));
+    }else{
+      s.addEventListener('pointerdown', remove);
+    }
     gameArea.appendChild(s);
     remaining++; total++;
     return s;
@@ -241,7 +274,7 @@
     for(let i=0;i<STAIN_START;i++) spawnStain();
     seconds = GAME_TIME;
     timerEl.textContent = seconds;
-    startTime = Date.now();
+    startTime = now();
     countdown = setInterval(()=>{
       seconds--;
       timerEl.textContent = seconds;
@@ -275,22 +308,30 @@
       prize:0, code:'',
       score: total - remaining,
       missed: remaining,
-      duration: (Date.now()-startTime)/1000,
+      duration: (now()-startTime)/1000,
       device: DEVICE,
       geo
     };
     if(success){
       const prize = pickPrize();
       const code  = `DCGC-${Date.now()}-${prize}`;
-      resultText.textContent = `Congrats! You won a $${prize} gift certificate 🎉`;
       new QRCode(qrWrap,{text:code,width:256,height:256});
       confetti();
       payload.prize = prize;
       payload.code  = code;
       payload.missed = 0;
       payload.score = total;
+      if(Math.random() < 0.5){
+        resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>Lucky you! You’ve earned a bonus round. Tap to play again!`;
+        setCooldown(0);
+      }else{
+        resultText.innerHTML = `Congrats! You won a $${prize} gift certificate 🎉<br>Great job! You’ve won. Come back in 15 minutes for another chance!`;
+        setCooldown(15);
+      }
     }else{
-      resultText.textContent = 'Nice try! Give it another go.';
+      resultText.textContent = 'Thanks for playing! Please come back in 10 minutes to try again.';
+      new QRCode(qrWrap,{text:"TIP: Blot, don't rub!",width:256,height:256});
+      setCooldown(10);
     }
     if(typeof google !== 'undefined'){
       google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
@@ -312,6 +353,7 @@
   }
 
   playBtn.addEventListener('click', () => {
+    if(!canPlay()) return;
     if(geo){
       begin();
     }else{
@@ -324,13 +366,17 @@
       });
     }
   });
-  document.getElementById('restartBtn').addEventListener('click', reset);
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    if(!canPlay()) return;
+    resultScreen.classList.add('hidden');
+    begin();
+  });
 
   scheduleBubble();
 
   setInterval(()=>{
     if(!resultScreen.classList.contains('hidden') &&
-       Date.now()-startTime > (GAME_TIME+30)*1000){
+       now()-startTime > (GAME_TIME+30)*1000){
       reset();
     }
   },5000);
