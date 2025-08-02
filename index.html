@@ -91,19 +91,20 @@
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
 
-  // constantly pull the cannon layer to the top
+  // keep the cannon layer above other DOM updates
   const bringCannonFront = () => {
     if (document.body.lastElementChild !== uiShell) {
       document.body.appendChild(uiShell);
     }
   };
-  setInterval(bringCannonFront, 1500);
 
-  // Ensure the cannon image always exists even if external code removes it
-  const ensureCannon = () => {
-    if (!document.body.contains(cannon)) {
-      console.warn('Cannon element missing – recreating');
-      const img = document.createElement('img');
+  // Periodically verify the cannon remains visible and properly positioned
+  const checkCannon = () => {
+    if (!document.body.contains(uiShell)) {
+      document.body.appendChild(uiShell);
+    }
+    if (!uiShell.contains(cannon)) {
+      const img = new Image();
       img.id = 'cannon';
       img.src = 'https://www.dublincleaners.com/wp-content/uploads/2025/08/Canon.png';
       img.alt = 'cannon';
@@ -111,14 +112,21 @@
       uiShell.appendChild(img);
       cannon = img;
     }
+    const rect = cannon.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (rect.bottom < 0 || rect.right < 0 || rect.top > vh || rect.left > vw || rect.width === 0 || rect.height === 0) {
+      cannon.style.display = 'block';
+      cannon.style.top = 'auto';
+      cannon.style.left = 'auto';
+      cannon.style.bottom = '1rem';
+      cannon.style.right = '1rem';
+      cannon.style.transform = 'rotate(0deg)';
+    }
     bringCannonFront();
   };
-
-  // Watch the DOM for removal of the cannon and restore if needed
-  const cannonObserver = new MutationObserver(ensureCannon);
-  cannonObserver.observe(document.body, {subtree:true, childList:true});
-  ensureCannon();
-  bringCannonFront();
+  setInterval(checkCannon, 1000);
+  checkCannon();
 
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer;
 
