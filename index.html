@@ -8,8 +8,9 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
-    #ui-shell{position:fixed;inset:0;pointer-events:none;z-index:50;}
-    #cannon{position:absolute;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;}
+    /* keep cannon layer above everything */
+    #ui-shell{position:fixed;inset:0;pointer-events:none;z-index:2147483647;}
+    #cannon{position:fixed;width:110px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:inherit;}
     .bubble{position:absolute;pointer-events:none;}
     .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
     .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
@@ -90,6 +91,14 @@
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
 
+  // constantly pull the cannon layer to the top
+  const bringCannonFront = () => {
+    if (document.body.lastElementChild !== uiShell) {
+      document.body.appendChild(uiShell);
+    }
+  };
+  setInterval(bringCannonFront, 1500);
+
   // Ensure the cannon image always exists even if external code removes it
   const ensureCannon = () => {
     if (!document.body.contains(cannon)) {
@@ -102,12 +111,14 @@
       uiShell.appendChild(img);
       cannon = img;
     }
+    bringCannonFront();
   };
 
   // Watch the DOM for removal of the cannon and restore if needed
   const cannonObserver = new MutationObserver(ensureCannon);
   cannonObserver.observe(document.body, {subtree:true, childList:true});
   ensureCannon();
+  bringCannonFront();
 
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer;
 
@@ -176,6 +187,7 @@
       if(remaining===0 && seconds>0) win();
     });
     gameArea.appendChild(s);
+    bringCannonFront();
     remaining++; total++;
     return s;
   }
@@ -217,6 +229,7 @@
   }
 
   function begin(){
+    bringCannonFront();
     startScreen.classList.add('hidden');
     clearTimeout(bubbleTimer);
     startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
@@ -283,11 +296,13 @@
 
   function confetti(){
     if(window.confetti){
-      window.confetti({particleCount:160, spread:90, origin:{y:0.6}});
+      window.confetti({particleCount:160, spread:90, origin:{y:0.6}, zIndex:1});
+      bringCannonFront();
     }
   }
 
   function reset(){
+    bringCannonFront();
     resultScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
     scheduleBubble();
