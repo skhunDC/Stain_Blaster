@@ -82,22 +82,32 @@
   const startScreen = document.getElementById('startScreen');
   const gameArea    = document.getElementById('gameArea');
   const timerEl     = document.getElementById('timer');
-  const cannon      = document.getElementById('cannon');
+  const uiShell     = document.getElementById('ui-shell');
+  let cannon        = document.getElementById('cannon');
   const resultScreen= document.getElementById('resultScreen');
   const resultText  = document.getElementById('resultText');
   const qrWrap      = document.getElementById('qrWrap');
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
 
-  // Monitor any unexpected mutations to the cannon element
-  const cannonObserver = new MutationObserver(mutations => {
-    mutations.forEach(m => {
-      if ([...m.removedNodes].includes(cannon) || m.target === cannon) {
-        console.warn('Cannon mutation detected:', m);
-      }
-    });
-  });
-  cannonObserver.observe(document.body, {subtree:true, childList:true, attributes:true});
+  // Ensure the cannon image always exists even if external code removes it
+  const ensureCannon = () => {
+    if (!document.body.contains(cannon)) {
+      console.warn('Cannon element missing – recreating');
+      const img = document.createElement('img');
+      img.id = 'cannon';
+      img.src = 'https://www.dublincleaners.com/wp-content/uploads/2025/08/Canon.png';
+      img.alt = 'cannon';
+      img.className = 'select-none';
+      uiShell.appendChild(img);
+      cannon = img;
+    }
+  };
+
+  // Watch the DOM for removal of the cannon and restore if needed
+  const cannonObserver = new MutationObserver(ensureCannon);
+  cannonObserver.observe(document.body, {subtree:true, childList:true});
+  ensureCannon();
 
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer;
 
