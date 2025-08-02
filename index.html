@@ -55,7 +55,7 @@
   let   STAIN_SIZE  = IS_MOBILE ? 68 : 90; // px (smaller on phones)
   const TOP_MARGIN    = IS_MOBILE ? 10 : 50;
   const BOTTOM_MARGIN = IS_MOBILE ? 30 : 100;
-  const FIRE_RATE   = 3000;               // ms per extra stain
+  const FIRE_RATE   = IS_MOBILE ? 1500 : 3000; // ms per extra stain (faster on phones)
   const DEVICE      = IS_MOBILE ? 'mobile' : 'kiosk';
   const STAIN_IMAGES = [
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Ketchup.png',
@@ -241,6 +241,7 @@
       }
     },1000);
     fireInterval = setInterval(fireCannon, FIRE_RATE);
+    if(IS_MOBILE) setTimeout(fireCannon, FIRE_RATE/2);
   }
 
   function win(){
