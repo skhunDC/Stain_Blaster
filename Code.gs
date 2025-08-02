@@ -17,7 +17,8 @@ const HEADERS = [
   'Stains cleared',
   'Stains missed',
   'Seconds taken',
-  'Device'
+  'Device',
+  'Geo'
 ];
 
 /** Serve the kiosk page */
@@ -44,7 +45,8 @@ function logGame(dataJSON) {
     d.score,               // Stains cleared
     d.missed || 0,         // Stains missed
     d.duration,            // Seconds taken
-    d.device || 'kiosk'    // Device label
+    d.device || 'kiosk',   // Device label
+    d.geo || ''            // Geo location
   ]);
   return true;
 }
