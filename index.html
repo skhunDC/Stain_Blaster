@@ -7,8 +7,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
-    .stain{position:absolute;width:90px;height:90px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
+    .stain{position:absolute;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
     #cannon{position:absolute;width:220px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:50;}
+    @media (max-width:414px){
+      #cannon{width:120px;bottom:.5rem;right:.5rem;}
+      #startScreen{padding-bottom:6rem;}
+    }
     .bubble{position:absolute;pointer-events:none;}
     .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
     .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
@@ -47,8 +51,12 @@
   /* ----- Config ----- */
   const GAME_TIME   = 12;                 // seconds
   const STAIN_START = 15;                 // initial stains
-  const STAIN_SIZE  = 90;                 // px
+  const IS_MOBILE   = window.innerWidth <= 414;
+  let   STAIN_SIZE  = IS_MOBILE ? 68 : 90; // px (smaller on phones)
+  const TOP_MARGIN    = IS_MOBILE ? 10 : 50;
+  const BOTTOM_MARGIN = IS_MOBILE ? 30 : 100;
   const FIRE_RATE   = 3000;               // ms per extra stain
+  const DEVICE      = IS_MOBILE ? 'mobile' : 'kiosk';
   const STAIN_IMAGES = [
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Ketchup.png',
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Coffee.png',
@@ -157,10 +165,14 @@
     s.src = randomImage();
     s.className = 'stain';
     const rect = gameArea.getBoundingClientRect();
-    if(x===undefined){ x = Math.random()*(rect.width - STAIN_SIZE); }
-    if(y===undefined){ y = Math.random()*(rect.height - STAIN_SIZE - 100) + 50; }
-    s.style.left = x+'px';
-    s.style.top  = y+'px';
+    const spawnW = rect.width  - STAIN_SIZE;
+    const spawnH = rect.height - STAIN_SIZE - TOP_MARGIN - BOTTOM_MARGIN;
+    if(x===undefined){ x = Math.random()*spawnW; }
+    if(y===undefined){ y = Math.random()*spawnH + TOP_MARGIN; }
+    s.style.left   = x+'px';
+    s.style.top    = y+'px';
+    s.style.width  = STAIN_SIZE+'px';
+    s.style.height = STAIN_SIZE+'px';
     s.addEventListener('pointerdown',()=>{
       s.remove();
       remaining--;
@@ -197,7 +209,7 @@
     const mouthX = rect.left + rect.width*0.15 - area.left;
     const mouthY = rect.top  + rect.height*0.15 - area.top;
     const targetX = Math.random()*(area.width - STAIN_SIZE);
-    const targetY = Math.random()*(area.height - STAIN_SIZE - 100) + 50;
+    const targetY = Math.random()*(area.height - STAIN_SIZE - TOP_MARGIN - BOTTOM_MARGIN) + TOP_MARGIN;
     const angle = Math.atan2(targetY - mouthY, targetX - mouthX);
     cannon.style.transform = `rotate(${angle}rad)`;
     const offset = 30;
@@ -252,7 +264,7 @@
       score: total - remaining,
       missed: remaining,
       duration: (Date.now()-startTime)/1000,
-      device:'kiosk',
+      device: DEVICE,
       geo
     };
     if(success){
