@@ -38,6 +38,7 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 ## QR Rewards
 * Victories produce a QR‑encoded voucher worth $5‑$50.
 * Even losses present a QR with a short cleaning tip to reinforce eco expertise.
+* Tips rotate from the `LOSS_TIPS` array; edit it to add or tweak loser messages like “Misleading Label” or “Mysterious Lint Monster.”
 
 ## Prize Odds
 Default odds live in `index.html`. To adjust without a push, expose them via `logGame` response or a `getConfig()` GAS endpoint, then fetch at runtime.
