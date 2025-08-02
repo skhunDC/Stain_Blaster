@@ -76,6 +76,11 @@
 
   function now(){ return Date.now() + timeOffset; }
 
+  // Encode strings so QRCode library handles Unicode characters correctly
+  function encodeForQR(str){
+    return unescape(encodeURIComponent(str));
+  }
+
   function applyDifficulty(){
     STAIN_SIZE  = BASE_STAIN_SIZE / Math.pow(1.2, winStreak);
     STAIN_START = Math.round(BASE_STAIN_START * Math.pow(1.15, winStreak));
@@ -324,7 +329,7 @@
     if(success){
       const prize = pickPrize();
       const code  = `DCGC-${Date.now()}-${prize}`;
-      new QRCode(qrWrap,{text:code,width:256,height:256});
+      new QRCode(qrWrap,{text:encodeForQR(code),width:256,height:256});
       confetti();
       payload.prize = prize;
       payload.code  = code;
@@ -336,7 +341,7 @@
       const pick = LOSS_TIPS[Math.floor(Math.random()*LOSS_TIPS.length)];
       handleGameEnd('lose');
       resultText.innerHTML = `${pick.label}<br>${resultText.innerHTML}`;
-      new QRCode(qrWrap,{text:pick.tip,width:256,height:256});
+      new QRCode(qrWrap,{text:encodeForQR(pick.tip),width:256,height:256});
     }
     if(typeof google !== 'undefined'){
       google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
