@@ -27,6 +27,18 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 * Each streak shrinks stains ~20 %, adds ~15 % more splatters, and speeds the cannon by ~15 %.
 * Losing resets the streak and returns to base difficulty.
 
+## Fair Play Lock & Bonus Rounds
+* LocalStorage enforces a 10‑minute cooldown between plays on the same device.
+* Winners flip a virtual coin for an instant bonus round; if not selected they must wait 15 minutes.
+* Losses immediately show “Thanks for playing! Please come back in 10 minutes to try again.”
+
+## Mobile Optimizations
+* Phones render smaller stains, spread them across a wider vertical range, and require a brief (~200 ms) press before a stain clears.
+
+## QR Rewards
+* Victories produce a QR‑encoded voucher worth $5‑$50.
+* Even losses present a QR with a short cleaning tip to reinforce eco expertise.
+
 ## Prize Odds
 Default odds live in `index.html`. To adjust without a push, expose them via `logGame` response or a `getConfig()` GAS endpoint, then fetch at runtime.
 
