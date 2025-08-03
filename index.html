@@ -314,6 +314,8 @@
     resultScreen.classList.remove('hidden');
     qrWrap.innerHTML = '';
     qrWrap.className = 'p-4 bg-stone-100 rounded-2xl shadow-inner';
+    // Clear any previous result text so only the final message is shown
+    resultText.textContent = '';
     const payload = {
       prize:0, code:'',
       score: total - remaining,
@@ -395,6 +397,8 @@
   });
 
   scheduleBubble();
+  // Pre-fetch geolocation so the Play button responds immediately on first tap
+  updateGeo();
 
   setInterval(()=>{
     if(!resultScreen.classList.contains('hidden') &&
