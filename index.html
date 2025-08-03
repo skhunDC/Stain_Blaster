@@ -127,7 +127,8 @@
   const qrWrap      = document.getElementById('qrWrap');
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
-  let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer, geo = '';
+  let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer,
+      geo = '', resultShown = false;
 
   function updateGeo(){
     return new Promise(resolve => {
@@ -276,7 +277,7 @@
     gameArea.classList.remove('hidden');
     gameArea.querySelectorAll('.stain').forEach(s=>s.remove());
     if(!gameArea.contains(timerEl)) gameArea.appendChild(timerEl);
-    remaining=0; total=0;
+    remaining=0; total=0; resultShown=false;
     for(let i=0;i<STAIN_START;i++) spawnStain();
     seconds = GAME_TIME;
     timerEl.textContent = seconds;
@@ -307,6 +308,8 @@
   }
 
   function showResult(success){
+    if(resultShown) return;
+    resultShown = true;
     gameArea.classList.add('hidden');
     resultScreen.classList.remove('hidden');
     qrWrap.innerHTML = '';
@@ -371,6 +374,7 @@
   function reset(){
     resultScreen.classList.add('hidden');
     startScreen.classList.remove('hidden');
+    resultShown = false;
     scheduleBubble();
   }
 
