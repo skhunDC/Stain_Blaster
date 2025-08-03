@@ -352,8 +352,6 @@
       const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
       resultText.textContent = 'Thanks for playing! Tap Play Again to try again.';
       qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg';
-      const plainTip = tip.replace(/<[^>]+>/g,'');
-      new QRCode(qrWrap,{text:encodeForQR(plainTip),width:256,height:256});
       const tipDiv = document.createElement('div');
       tipDiv.className = 'text-xl text-stone-700 whitespace-pre-line';
       tipDiv.innerHTML = tip;
