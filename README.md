@@ -24,8 +24,11 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
    ```html
    <iframe
      src="YOUR_DEPLOYED_URL/exec"
-     width="100%" height="800" style="border:0;">
-   </iframe>
+     width="100%" height="100%"
+     style="border:0;"
+     allow="autoplay; fullscreen"
+     allowfullscreen
+   ></iframe>
    ```
 
 ## Attract Bubbles
