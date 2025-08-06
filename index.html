@@ -127,23 +127,7 @@
   const logo        = document.getElementById('logo');
   const playBtn     = document.getElementById('playBtn');
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer,
-      geo = '', resultShown = false;
-
-  function updateGeo(){
-    return new Promise(resolve => {
-      if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(pos => {
-          geo = `${pos.coords.latitude},${pos.coords.longitude}`;
-          resolve(true);
-        }, () => {
-          geo = '';
-          resolve(false);
-        });
-      } else {
-        resolve(false);
-      }
-    });
-  }
+      resultShown = false;
 
   function pickPrize(){
     const r = Math.random();
@@ -320,8 +304,7 @@
       score: total - remaining,
       missed: remaining,
       duration: (now()-startTime)/1000,
-      device: DEVICE,
-      geo
+      device: DEVICE
     };
     if(success){
       const handle = res => {
@@ -397,17 +380,7 @@
   }
 
   playBtn.addEventListener('click', () => {
-    if(geo){
-      startRound();
-    } else {
-      updateGeo().then(allowed => {
-        if(allowed){
-          startRound();
-        } else {
-          alert('Location access is required to play.');
-        }
-      });
-    }
+    startRound();
   });
   document.getElementById('restartBtn').addEventListener('click', () => {
     resultScreen.classList.add('hidden');
@@ -415,8 +388,6 @@
   });
 
   scheduleBubble();
-  // Pre-fetch geolocation so the Play button responds immediately on first tap
-  updateGeo();
 
   setInterval(()=>{
     if(!resultScreen.classList.contains('hidden') &&

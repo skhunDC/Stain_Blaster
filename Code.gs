@@ -18,8 +18,7 @@ const HEADERS = [
   'Stains cleared',
   'Stains missed',
   'Seconds taken',
-  'Device',            // 'kiosk' or 'mobile'
-  'Geo location'
+  'Device'            // 'kiosk' or 'mobile'
 ];
 
 /** Serve the kiosk page */
@@ -27,7 +26,9 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('Stain Blaster – Dublin Cleaners')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    .addMetaTag('permissions-policy', 'autoplay=(self)')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME);
 }
 
 /** Append one row of JSON-encoded data from client */
@@ -52,8 +53,7 @@ function logGame(dataJSON) {
     d.score,               // Stains cleared
     d.missed || 0,         // Stains missed
     d.duration,            // Seconds taken
-    d.device || 'kiosk',   // Device label
-    d.geo || ''            // Geo location
+    d.device || 'kiosk'    // Device label
   ]);
   return true;
 }
