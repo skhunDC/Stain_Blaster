@@ -78,3 +78,8 @@ All images can be swapped by editing `index.html`; the service worker caches the
 
 ## License
 Internal use only – Dublin Cleaners. Fork freely inside org.
+
+## v2 Addendum
+* Rounds locked to 12 seconds.
+* Difficulty scales exponentially each level via stain count/size/spawn interval curve.
+* Rewards are whole-dollar credits or comped garments – never percentage discounts to protect pricing.

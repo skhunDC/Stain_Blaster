@@ -1,115 +1,143 @@
 /**
- * Dublin Cleaners – “Stain Blaster” Mini-Game
- * Google Apps Script backend (HTML Service)
- * ------------------------------------------
- * Logs game results to a Google Sheet and serves index.html.
- * Supports both kiosk and mobile plays; client reports device type.
- *
- * 1.  Deploy as a Web App → “Execute as Me”, “Anyone”.
- * 2.  Add your Sheet ID below or create one named “StainBlasterLog”.
+ * Dublin Cleaners – "Stain Blaster" Mini-Game (v2)
+ * Google Apps Script backend
+ * ----------------------------------------------
+ * Handles reward generation, QR creation and Sheet logging.
+ * Rewards are always dollar credits or comped services – never percentages.
  */
-// Google Sheet used for logging game results
+
 const SHEET_ID   = '17k6TfJeAERydKa0L0vAXRp6y0q3zckB35dFv9qfDQ6g';
-const SHEET_NAME = 'StainBlasterLog';
+const SHEET_NAME = 'RewardLog';
 const HEADERS = [
-  'Timestamp',
-  'Voucher code',
-  'Prize $',
-  'Stains cleared',
-  'Stains missed',
-  'Seconds taken',
-  'Device',            // 'kiosk' or 'mobile'
-  'Geo location'
+  'playerId',
+  'rewardId',
+  'tier',
+  'rewardText',
+  'redeemed?',
+  'timestamp',
+  'requiresManagerApproval'
 ];
 
-/** Serve the kiosk page */
-function doGet() {
+/** Serve main page or redeem page */
+function doGet(e){
+  if(e && e.parameter && e.parameter.rewardId){
+    return redeem(e.parameter.rewardId);
+  }
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('Stain Blaster – Dublin Cleaners')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
-/** Append one row of JSON-encoded data from client */
-function logGame(dataJSON) {
+/** Core game handler called from client */
+function playGame(playerId, win, level){
+  const props = PropertiesService.getUserProperties();
+  let winStreak = Number(props.getProperty('winStreak') || 0);
+  if(win){
+    // apply win before bumping streak so bonus uses previous streak value
+    winStreak += 1;
+  }else{
+    winStreak = 0;
+  }
+  props.setProperty('winStreak', winStreak);
+  props.setProperty('lastLevel', level);
+
+  // choose tier (base probabilities)
+  let tier = pickTier();
+  if(win && winStreak > 1){
+    tier = Math.min(4, tier + 1); // streak bonus
+  }
+
+  // reward text and guardrails
+  const rewardText = pickRewardText(tier);
   const ss    = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
-  const existingHeaders = sheet
-    .getRange(1, 1, 1, Math.max(sheet.getLastColumn(), HEADERS.length))
-    .getValues()[0];
-  const headersMismatch = existingHeaders
-    .slice(0, HEADERS.length)
-    .some((h, i) => h !== HEADERS[i]);
-  if (existingHeaders.length < HEADERS.length || headersMismatch) {
-    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
-    sheet.setFrozenRows(1); // keep headers visible
+  ensureHeaders(sheet);
+  if(tier >= 2 && hasActiveCredit(sheet, playerId)){
+    // downgrade to tier 1 if prior credit exists
+    tier = 1;
   }
-  const d     = JSON.parse(dataJSON);
+  const finalText = pickRewardText(tier);
+
+  // generate QR only for tier >=2 credits
+  let qrBlob = null;
+  const rewardId = Utilities.getUuid();
+  let requiresApproval = finalText.indexOf('Comped premium garment') !== -1;
+  if(tier >= 2){
+    const baseUrl   = ScriptApp.getService().getUrl();
+    const redeemUrl = baseUrl + '?rewardId=' + rewardId;
+    const qrUrl     = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encodeURIComponent(redeemUrl);
+    const blob      = UrlFetchApp.fetch(qrUrl).getBlob();
+    qrBlob          = Utilities.base64Encode(blob.getBytes());
+  }
+
   sheet.appendRow([
-    new Date(),            // Timestamp
-    d.code || '',          // Voucher code (empty on loss)
-    d.prize || 0,          // Dollar value won
-    d.score,               // Stains cleared
-    d.missed || 0,         // Stains missed
-    d.duration,            // Seconds taken
-    d.device || 'kiosk',   // Device label
-    d.geo || ''            // Geo location
+    playerId,
+    rewardId,
+    tier,
+    finalText,
+    false,
+    new Date(),
+    requiresApproval
   ]);
-  return true;
+
+  return {tier:tier, rewardText:finalText, qrBlob:qrBlob, winStreak:winStreak};
 }
 
-/** Provide server timestamp so clients can't bypass cooldown by changing device clock */
-function getServerTime(){
-  return Date.now();
+/** Determine reward tier from weighted probabilities */
+function pickTier(){
+  const r = Math.random();
+  if(r < 0.60) return 1;
+  if(r < 0.85) return 2;
+  if(r < 0.97) return 3;
+  return 4;
 }
 
-// ----- Win Streak Helpers -----
-// Prize ladder: attempt to climb for bigger credits on consecutive wins.
-const prizeTable = [
-  {chance: 0.50, credit:  5},
-  {chance: 0.25, credit: 10},
-  {chance: 0.25, credit: 25},
-  {chance: 0.10, credit: 50},
-];
+const REWARDS = {
+  1: ['Eco tip: line-dry to save energy', 'Share our stain-guide GIF!'],
+  2: ['$5 cleaning credit', 'Free button replacement'],
+  3: ['$10 cleaning credit', 'Comped shirt press'],
+  4: ['Comped premium garment', 'VIP rush credit']
+};
 
-/**
- * Refresh win streak timer at game start. If more than five minutes have
- * elapsed since the last play, the streak (difficulty) resets. Returns the
- * current streak value so the client can adjust difficulty immediately.
- */
-function refreshStreakTimer(){
-  const props   = PropertiesService.getUserProperties();
-  const lastWin = Number(props.getProperty('lastPlayTs') || 0);
-  if(Date.now() - lastWin > 5 * 60 * 1000){
-    props.deleteProperty('winStreak');
+function pickRewardText(tier){
+  const opts = REWARDS[tier];
+  return opts[Math.floor(Math.random()*opts.length)];
+}
+
+/** Ensure headers exist on the Sheet */
+function ensureHeaders(sheet){
+  const existing = sheet.getRange(1,1,1,HEADERS.length).getValues()[0];
+  if(existing.join() !== HEADERS.join()){
+    sheet.getRange(1,1,1,HEADERS.length).setValues([HEADERS]);
+    sheet.setFrozenRows(1);
   }
-  props.setProperty('lastPlayTs', Date.now());
-  return Number(props.getProperty('winStreak') || 0);
 }
 
-/**
- * Handle a completed win. Depending on the current streak, the player has a
- * chance to earn a larger credit and advance up the ladder. Failure still
- * counts as a normal win; the streak resets to zero.
- *
- * Returns an object {success:Boolean, prize:Number, winStreak:Number} where
- * `success` indicates a ladder hit and `prize` is the credit to award.
- */
-function handleWin(){
-  const props = PropertiesService.getUserProperties();
-  const idx   = Number(props.getProperty('winStreak') || 0);
-  const tier  = prizeTable[Math.min(idx, prizeTable.length - 1)];
-
-  if(Math.random() < tier.chance){
-    // SUCCESS ➜ prize path
-    if(idx >= prizeTable.length - 1){
-      props.deleteProperty('winStreak');
-      return {success:true, prize:tier.credit, winStreak:0};
+/** Guardrail: one active Tier2+ credit per 7 days */
+function hasActiveCredit(sheet, playerId){
+  const now   = new Date();
+  const limit = new Date(now.getTime() - 7*24*60*60*1000);
+  const rows  = sheet.getDataRange().getValues();
+  for(let i=1;i<rows.length;i++){
+    const row = rows[i];
+    if(row[0] === playerId && row[2] >= 2 && row[4] !== true){
+      const ts = row[5];
+      if(ts && ts >= limit) return true;
     }
-    props.setProperty('winStreak', idx + 1);
-    return {success:true, prize:tier.credit, winStreak:idx + 1};
-  }else{
-    // FAIL ➜ normal win
-    props.deleteProperty('winStreak');
-    return {success:false, prize:0, winStreak:0};
   }
+  return false;
+}
+
+/** Redeem endpoint toggles redeemed? to TRUE and shows confirmation */
+function redeem(rewardId){
+  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+  const data  = sheet.getDataRange().getValues();
+  for(let i=1;i<data.length;i++){
+    if(data[i][1] === rewardId){
+      sheet.getRange(i+1,5).setValue(true);
+      return HtmlService.createHtmlOutput('<h2>Reward Redeemed</h2><p>' + data[i][3] + '</p>');
+    }
+  }
+  return HtmlService.createHtmlOutput('<h2>Reward not found</h2>');
 }
