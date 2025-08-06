@@ -87,15 +87,14 @@
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Wine.png'
   ];
   const PRIZES      = [                   // cumulative probability table
-    {p:0.60, value:5},
-    {p:0.85, value:10},
-    {p:0.95, value:20},
-    {p:0.99, value:25},
-    {p:1.00, value:50}
+    {p:0.60, type:'tip',     value:0,  desc:'Eco tip / share-GIF'},
+    {p:0.85, type:'credit',  value:5,  desc:'$5 cleaning credit or free button replacement'},
+    {p:0.97, type:'credit',  value:10, desc:'$10 cleaning credit or comped shirt press'},
+    {p:1.00, type:'premium', value:0,  desc:'Comped premium garment or VIP rush credit'}
   ];
   const BUBBLE_LINES = [
     'Think you can wipe all the stains?',
-    'Win up to $50 in 12 seconds!',
+    'Eco tips to premium perks await!',
     'Swipe fast – prizes await!',
     'Spotless skills? Prove it!',
     'Tap ▶ to blast and earn!',
@@ -148,7 +147,7 @@
 
   function pickPrize(){
     const r = Math.random();
-    return PRIZES.find(t => r <= t.p).value;
+    return PRIZES.find(t => r <= t.p);
   }
 
   function randomImage(){
@@ -326,20 +325,39 @@
     };
     if(success){
       const handle = res => {
-        let prize;
+        let prizeObj;
         if(res && res.success){
-          prize = res.prize;
+          prizeObj = {value:res.prize, type:'credit'};
         }else{
-          prize = pickPrize();
+          prizeObj = pickPrize();
         }
-        const code  = `DCGC-${Date.now()}-${prize}`;
-        new QRCode(qrWrap,{text:encodeForQR(code),width:256,height:256});
-        confetti();
-        payload.prize = prize;
-        payload.code  = code;
         payload.missed = 0;
         payload.score = total;
-        resultText.textContent = `Congrats! You won a $${prize} gift certificate 🎉`;
+        if(prizeObj.value > 0){
+          const code  = `DCGC-${Date.now()}-${prizeObj.value}`;
+          new QRCode(qrWrap,{text:encodeForQR(code),width:256,height:256});
+          confetti();
+          payload.prize = prizeObj.value;
+          payload.code  = code;
+          resultText.textContent = `Congrats! You won a $${prizeObj.value} cleaning credit 🎉`;
+        }else if(prizeObj.type === 'tip'){
+          confetti();
+          const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
+          resultText.textContent = 'Eco Bonus! Enjoy this cleaning tip 🌱';
+          qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg';
+          const tipDiv = document.createElement('div');
+          tipDiv.className = 'text-xl text-stone-700 whitespace-pre-line';
+          tipDiv.innerHTML = tip;
+          qrWrap.appendChild(tipDiv);
+        }else{
+          confetti();
+          resultText.textContent = 'Epic win! Show this screen for a premium garment clean or VIP rush credit 🎉';
+          qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg text-center';
+          const msgDiv = document.createElement('div');
+          msgDiv.className = 'text-xl text-stone-700';
+          msgDiv.textContent = 'Present to staff for manual redemption.';
+          qrWrap.appendChild(msgDiv);
+        }
         if(typeof google !== 'undefined'){
           google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
         }

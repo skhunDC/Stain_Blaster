@@ -36,12 +36,20 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 * Phones render smaller stains, spread them across a wider vertical range, and clear with a quick tap.
 
 ## QR Rewards
-* Victories produce a QR‑encoded voucher worth $5‑$50.
+* Victories yield tiered rewards, from eco tips to premium garment comps.
 * Even losses present a QR with a short cleaning tip to reinforce eco expertise.
 * Tips rotate from the `LOSS_TIPS` array; edit it to add or tweak loser messages like “Misleading Label” or “Mysterious Lint Monster.”
 
 ## Prize Odds
 Default odds live in `index.html`. To adjust without a push, expose them via `logGame` response or a `getConfig()` GAS endpoint, then fetch at runtime.
+
+### Tiered Rewards (per round)
+| Tier | Chance | Reward | Notes |
+|------|--------|--------|-------|
+| Common | 60% | Eco tip or share-GIF | No monetary value |
+| Uncommon | 25% | $5 cleaning credit or free button replacement | Credit = store gift code |
+| Rare | 12% | $10 cleaning credit or comped shirt press | ≤ 5 redemptions/day |
+| Epic | 3% | Comped premium garment (e.g., gown clean) or VIP rush credit | 1/day cap, manager approval |
 
 ### Ladder Bonuses
 Consecutive wins unlock a bonus ladder with its own probabilities:

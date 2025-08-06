@@ -8,7 +8,14 @@ The **Stain Blaster** mini-game reinforces Dublin Cleaners’ Three Uniques by i
 | 1. Attract screen invites touch.<br>2. Twenty-three stains appear over a white shirt background.<br>3. Guests tap/slide each stain → it vanishes.<br>4. Clear all within 12 s (including cannon-fired extras) → confetti, prize, QR.<br>5. Lose → friendly “Try again.” | `Code.gs` – GAS backend (log to Sheet).<br>`index.html` – Tailwind front end with responsive tweaks.<br>Sheet tab **StainBlasterLog** stores timestamp, voucher, prize, score, missed, duration, device, geo. |
 
 ## Prize Logic
-Weighted probabilities (60 % → $5, 25 % → $10, 10 % → $20, 4 % → $25, 1 % → $50) run **client-side** for snappy UX; results post to GAS where marketing can monitor redemption frequency and tweak weights.
+Tiered rewards run **client-side** for snappy UX; results post to GAS where marketing can monitor redemption frequency and tweak weights.
+
+| Tier | Chance | Reward | Notes |
+|------|--------|--------|-------|
+| 1 – Common | 60 % | Eco tip / share-GIF | No monetary value |
+| 2 – Uncommon | 25 % | $5 cleaning credit or free button replacement | Credit = store gift code |
+| 3 – Rare | 12 % | $10 cleaning credit or comped shirt press | ≤ 5 redemptions/day |
+| 4 – Epic | 3 % | Comped premium garment (e.g., gown clean) or VIP rush credit | 1/day cap, manager approval |
 
 ## QR Content
 QR codes embed a plain-text voucher string (`DCGC-<epochMs>-<value>`), avoiding URL requirements yet uniquely identifying each win.
@@ -22,7 +29,7 @@ QR codes embed a plain-text voucher string (`DCGC-<epochMs>-<value>`), avoiding 
 * Phones render smaller stains, scatter them across a wider vertical range, and disappear with a quick tap.
 
 ## QR Rewards
-* Wins show a QR‑encoded voucher worth $5‑$50.
+* Wins yield tiered rewards from eco tips to premium garment comps.
 * Losses still present a QR with a quick cleaning tip to reinforce eco expertise.
 
 ## Offline Resilience
