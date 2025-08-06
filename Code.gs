@@ -26,7 +26,6 @@ function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('Stain Blaster – Dublin Cleaners')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-    .addMetaTag('permissions-policy', 'autoplay=(self)')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .setSandboxMode(HtmlService.SandboxMode.IFRAME);
 }
