@@ -16,6 +16,18 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 4. **Deploy → New Web App** “Execute as Me”, “Anyone”, copy URL.
 5. Point EloView/Yodeck to this URL (ensure portrait 1080×1920).
 
+## Embed on External Sites
+1. After updating `Code.gs`, **Deploy → Manage deployments → New deployment**.
+2. Choose **Web app** and set *Who has access* to **Anyone**.
+3. Use the deployment URL to embed the game:
+
+   ```html
+   <iframe
+     src="YOUR_DEPLOYED_URL/exec"
+     width="100%" height="800" style="border:0;">
+   </iframe>
+   ```
+
 ## Attract Bubbles
 * Start screen spawns playful speech bubbles every ~4 s (±1 s jitter).
 * Lines rotate from the `BUBBLE_LINES` array; edit or fetch at runtime to change copy.

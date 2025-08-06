@@ -26,7 +26,8 @@ const HEADERS = [
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('Stain Blaster – Dublin Cleaners')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /** Append one row of JSON-encoded data from client */
