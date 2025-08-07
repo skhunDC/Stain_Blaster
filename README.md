@@ -97,7 +97,7 @@ Monitor play counts, difficulty, and cost; pivot by day for prize budgeting.
 * **Shirt background** – 1080 × 1920 PNG of a pressed white dress shirt.
 * **Stain sprites** – semi-transparent PNG splatters (~90 px) with drop shadow; phones render them ~25 % smaller.
 * **Cannon sprite** – small, cartoony launcher anchored bottom-right; shrinks on phones so it never covers the Play button.
-All images can be swapped by editing `index.html`; the service worker caches them for offline play.
+All images can be swapped by editing `index.html`.
 
 ## License
 Internal use only – Dublin Cleaners. Fork freely inside org.
