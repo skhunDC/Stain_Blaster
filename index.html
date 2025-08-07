@@ -379,7 +379,9 @@
     scheduleBubble();
   }
 
+  const splashSound = new Audio('splat.mp3');
   playBtn.addEventListener('click', () => {
+    splashSound.play().catch(()=>{});
     startRound();
   });
   document.getElementById('restartBtn').addEventListener('click', () => {
@@ -396,23 +398,7 @@
     }
   },5000);
 
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  }
 })();
-</script>
-
-<!-- Lightweight offline cache (inline for brevity) -->
-<script id="sw" type="text/worker">
-self.addEventListener('install',e=>{self.skipWaiting();});
-self.addEventListener('fetch',e=>{
-  e.respondWith(
-    caches.open('stainblaster-v1').then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{
-      if(res.ok){ c.put(e.request,res.clone()); }
-      return res;
-    })))
-  );
-});
 </script>
 </body>
 </html>
