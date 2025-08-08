@@ -1,15 +1,11 @@
 {
   "name": "stain_blaster",
   "version": "1.0.0",
-  "description": "Kiosk-only Stain Blaster game",
+  "description": "Dublin Cleaners 'Stain Blaster' game",
   "scripts": {
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "test": "node -e \"console.log('no tests')\""
+    "test": "jest --passWithNoTests"
   },
   "devDependencies": {
-    "@google/clasp": "^2.4.2",
-    "eslint": "^8.57.0",
-    "prettier": "^3.2.5"
+    "jest": "^29.7.0"
   }
 }
