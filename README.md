@@ -2,6 +2,22 @@
 
 An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to win instant, QR‑encoded gift certificates. The same build now scales down for phones, keeping the cannon visible and shrinking stains for added challenge.
 
+## Kiosk/Iframe Build
+
+This kiosk-focused build removes all audio and restricted browser APIs. Apps Script is configured with `XFrameOptionsMode.ALLOWALL` so the game can be embedded inside iframes without permission errors.
+
+```html
+<iframe
+  src="https://script.google.com/macros/s/AKfycbwACMboC3x2m_9Sg1f_-HXYzpG3bnA81rYp3ra-q4vOttXJNKVag3uCLnmt9IsaEfI1/exec" 
+  width="1080"
+  height="1920"
+  style="border:0; aspect-ratio: 9/16;"
+  sandbox="allow-scripts allow-same-origin"
+></iframe>
+```
+
+> The iframe intentionally omits `allow` tokens for geolocation, camera, microphone, fullscreen, clipboard, payments, and other restricted features. Permissions are fully controlled by the outer page.
+
 ## Stack
 * **Google Apps Script (HTML Service)** – one `Code.gs` backend.
 * **Tailwind CSS via CDN** – rapid, utility-first styling.
@@ -15,21 +31,6 @@ An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait ki
 3. Add an **HTML** file named `index` and paste `index.html`.
 4. **Deploy → New Web App** “Execute as Me”, “Anyone”, copy URL.
 5. Point EloView/Yodeck to this URL (ensure portrait 1080×1920).
-
-## Embed on External Sites
-1. After updating `Code.gs`, **Deploy → Manage deployments → New deployment**.
-2. Choose **Web app** and set *Who has access* to **Anyone**.
-3. Use the deployment URL to embed the game:
-
-   ```html
-   <iframe
-     src="YOUR_DEPLOYED_URL/exec"
-     width="100%" height="100%"
-     style="border:0;"
-     allow="autoplay; fullscreen"
-     allowfullscreen
-   ></iframe>
-   ```
 
 ## Attract Bubbles
 * Start screen spawns playful speech bubbles every ~4 s (±1 s jitter).

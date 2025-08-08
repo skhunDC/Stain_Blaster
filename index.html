@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Kiosk build: audio & restricted APIs removed for iframe compatibility -->
 <html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
@@ -379,9 +380,7 @@
     scheduleBubble();
   }
 
-  const splashSound = new Audio('splat.mp3');
   playBtn.addEventListener('click', () => {
-    splashSound.play().catch(()=>{});
     startRound();
   });
   document.getElementById('restartBtn').addEventListener('click', () => {
