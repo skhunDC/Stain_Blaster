@@ -1,22 +1,10 @@
 # Stain Blaster Kiosk Game
 
-An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to reveal a quick cleaning tip. The same build now scales down for phones, keeping the cannon visible and shrinking stains for added challenge.
+An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to reveal a quick cleaning tip.
 
-## Kiosk/Iframe Build
+## Kiosk Build
 
-This kiosk-focused build removes all audio and restricted browser APIs. Apps Script is configured with `XFrameOptionsMode.ALLOWALL` so the game can be embedded inside iframes without permission errors.
-
-```html
-<iframe
-  src="https://script.google.com/macros/s/AKfycbwACMboC3x2m_9Sg1f_-HXYzpG3bnA81rYp3ra-q4vOttXJNKVag3uCLnmt9IsaEfI1/exec" 
-  width="1080"
-  height="1920"
-  style="border:0; aspect-ratio: 9/16;"
-  sandbox="allow-scripts allow-same-origin"
-></iframe>
-```
-
-> The iframe intentionally omits `allow` tokens for geolocation, camera, microphone, fullscreen, clipboard, payments, and other restricted features. Permissions are fully controlled by the outer page.
+This kiosk-focused build removes all audio and restricted browser APIs.
 
 ## Stack
 * **Google Apps Script (HTML Service)** – one `Code.gs` backend.
@@ -48,9 +36,6 @@ This kiosk-focused build removes all audio and restricted browser APIs. Apps Scr
 * Players can start a new round immediately after each game.
 * Consecutive wins continue to ramp difficulty to keep the challenge lively.
 
-## Mobile Optimizations
-* Phones render smaller stains, spread them across a wider vertical range, and clear with a quick tap.
-
 ## Cleaning Tips
 * Every round ends with a rotating eco-friendly cleaning tip to reinforce garment care.
 
@@ -72,16 +57,15 @@ Each play logs a row to the Google Sheet with the following columns:
 | B      | Stains cleared | Number of stains the player removed     |
 | C      | Stains missed  | Stains left when time expired           |
 | D      | Seconds taken  | Duration of the game in seconds         |
-| E      | Device         | Source device label (kiosk or mobile)   |
-| F      | Prize Tier     | Awarded tier (Common/Uncommon/Rare/Epic) |
-| G      | Prize Code     | Unique code for credit prizes           |
+| E      | Prize Tier     | Awarded tier (Common/Uncommon/Rare/Epic) |
+| F      | Prize Code     | Unique code for credit prizes           |
 
 Monitor play counts and difficulty; pivot by day for analytics.
 
 ## Local Assets
 * **Shirt background** – 1080 × 1920 PNG of a pressed white dress shirt.
-* **Stain sprites** – semi-transparent PNG splatters (~90 px) with drop shadow; phones render them ~25 % smaller.
-* **Cannon sprite** – small, cartoony launcher anchored bottom-right; shrinks on phones so it never covers the Play button.
+* **Stain sprites** – semi-transparent PNG splatters (~90 px) with drop shadow.
+* **Cannon sprite** – small, cartoony launcher anchored bottom-right.
 All images can be swapped by editing `index.html`.
 
 ## License
