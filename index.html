@@ -145,6 +145,14 @@
       </button>
     </div>
 
+    <div
+      id="highScoreDisplay"
+      class="fixed bottom-4 right-4 z-50 text-emerald-700 text-right"
+    >
+      <div class="text-lg font-semibold">High Score</div>
+      <div class="text-4xl font-bold">0</div>
+    </div>
+
     <script>
       (() => {
         /* ----- Config ----- */
@@ -278,7 +286,36 @@
           startTime,
           fireInterval,
           bubbleTimer,
-          resultShown = false;
+          resultShown = false,
+          highScore = 0,
+          highScoreDate = "";
+
+        function loadHighScore() {
+          highScore = parseInt(localStorage.getItem("highScore") || "0", 10);
+          highScoreDate = localStorage.getItem("highScoreDate") || "";
+          updateHighScoreDisplay();
+        }
+
+        function saveHighScore(score) {
+          highScore = score;
+          highScoreDate = new Date().toLocaleString();
+          localStorage.setItem("highScore", String(highScore));
+          localStorage.setItem("highScoreDate", highScoreDate);
+          updateHighScoreDisplay();
+        }
+
+        function updateHighScoreDisplay() {
+          const el = document.getElementById("highScoreDisplay");
+          if (!el) return;
+          let html = "<div class=\"text-lg font-semibold\">High Score</div>";
+          html += `<div class="text-4xl font-bold">${highScore}</div>`;
+          if (highScoreDate) {
+            html += `<div class="text-xs text-stone-500">${highScoreDate}</div>`;
+          }
+          el.innerHTML = html;
+        }
+
+        loadHighScore();
 
         function randomImage() {
           return STAIN_IMAGES[Math.floor(Math.random() * STAIN_IMAGES.length)];
@@ -558,6 +595,9 @@
                 .logGame(JSON.stringify(payload));
             }
             winStreak = 0;
+          }
+          if (payload.score > highScore) {
+            saveHighScore(payload.score);
           }
         }
 
