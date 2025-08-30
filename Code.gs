@@ -3,6 +3,7 @@
  * Google Apps Script backend (HTML Service)
  * ------------------------------------------
  * Logs game results to a Google Sheet and serves index.html.
+ * Supports both kiosk and mobile plays; client reports device type.
  *
  * 1.  Deploy as a Web App → “Execute as Me”, “Anyone”.
  * 2.  Add your Sheet ID below or create one named “StainBlasterLog”.
@@ -15,6 +16,7 @@ const HEADERS = [
   'Stains cleared',
   'Stains missed',
   'Seconds taken',
+  'Device',           // 'kiosk' or 'mobile'
   'Prize Tier',
   'Prize Code'
 ];
@@ -22,7 +24,8 @@ const HEADERS = [
 /** Serve the kiosk page */
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
-    .setTitle('Dublin Cleaners Game');
+    .setTitle('Dublin Cleaners Game')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /** Append one row of JSON-encoded data from client */
@@ -45,6 +48,7 @@ function logGame(dataJSON) {
     d.score,               // Stains cleared
     d.missed || 0,         // Stains missed
     d.duration,            // Seconds taken
+    d.device || 'kiosk',   // Device label
     d.prizeTier || '',     // Prize tier name
     d.prizeCode || ''      // Unique prize code if applicable
   ]);
