@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stain Blaster – Dublin Cleaners</title>
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     .stain{position:absolute;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
@@ -27,7 +26,7 @@
   <div id="startScreen" class="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-white touch-none select-none">
     <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png" alt="Dublin Cleaners" class="w-56">
     <div class="text-5xl font-bold text-stone-700 text-center leading-tight">Stain Blaster</div>
-    <div class="text-xl text-stone-500 text-center">Swipe the stains away in 12 seconds<br>and win an instant reward!</div>
+    <div class="text-xl text-stone-500 text-center">Swipe the stains away in 12 seconds<br>and reveal a cleaning tip!</div>
     <button id="playBtn" class="px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition">Play Now</button>
   </div>
 
@@ -71,11 +70,6 @@
 
   function now(){ return Date.now() + timeOffset; }
 
-  // Encode strings so QRCode library handles Unicode characters correctly
-  function encodeForQR(str){
-    return unescape(encodeURIComponent(str));
-  }
-
   function applyDifficulty(){
     STAIN_SIZE  = BASE_STAIN_SIZE / Math.pow(1.2, winStreak);
     STAIN_START = Math.round(BASE_STAIN_START * Math.pow(1.15, winStreak));
@@ -87,18 +81,12 @@
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Dirt.png',
     'https://www.dublincleaners.com/wp-content/uploads/2025/08/Wine.png'
   ];
-  const PRIZES      = [                   // cumulative probability table
-    {p:0.60, type:'tip',     value:0,  desc:'Eco tip / share-GIF'},
-    {p:0.85, type:'credit',  value:5,  desc:'$5 cleaning credit or free button replacement'},
-    {p:0.97, type:'credit',  value:10, desc:'$10 cleaning credit or comped shirt press'},
-    {p:1.00, type:'premium', value:0,  desc:'Comped premium garment or VIP rush credit'}
-  ];
   const BUBBLE_LINES = [
     'Think you can wipe all the stains?',
-    'Eco tips to premium perks await!',
-    'Swipe fast – prizes await!',
+    'Eco cleaning tips await!',
+    'Swipe fast – tips await!',
     'Spotless skills? Prove it!',
-    'Tap ▶ to blast and earn!',
+    'Tap ▶ to blast and learn!',
     'Your dry-cleaner believes in you 😎'
   ];
   const BUBBLE_INTERVAL = 4000; // ms between spawns
@@ -129,11 +117,6 @@
   const playBtn     = document.getElementById('playBtn');
   let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer,
       resultShown = false;
-
-  function pickPrize(){
-    const r = Math.random();
-    return PRIZES.find(t => r <= t.p);
-  }
 
   function randomImage(){
     return STAIN_IMAGES[Math.floor(Math.random()*STAIN_IMAGES.length)];
@@ -298,62 +281,31 @@
     resultScreen.classList.remove('hidden');
     qrWrap.innerHTML = '';
     qrWrap.className = 'p-4 bg-stone-100 rounded-2xl shadow-inner';
-    // Clear any previous result text so only the final message is shown
     resultText.textContent = '';
     const payload = {
-      prize:0, code:'',
       score: total - remaining,
       missed: remaining,
       duration: (now()-startTime)/1000,
       device: DEVICE
     };
+    const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
     if(success){
-      const handle = res => {
-        let prizeObj;
-        if(res && res.success){
-          prizeObj = {value:res.prize, type:'credit'};
-        }else{
-          prizeObj = pickPrize();
-        }
-        payload.missed = 0;
-        payload.score = total;
-        if(prizeObj.value > 0){
-          const code  = `DCGC-${Date.now()}-${prizeObj.value}`;
-          new QRCode(qrWrap,{text:encodeForQR(code),width:256,height:256});
-          confetti();
-          payload.prize = prizeObj.value;
-          payload.code  = code;
-          resultText.textContent = `Congrats! You won a $${prizeObj.value} cleaning credit 🎉`;
-        }else if(prizeObj.type === 'tip'){
-          confetti();
-          const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
-          resultText.textContent = 'Eco Bonus! Enjoy this cleaning tip 🌱';
-          qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg';
-          const tipDiv = document.createElement('div');
-          tipDiv.className = 'text-xl text-stone-700 whitespace-pre-line';
-          tipDiv.innerHTML = tip;
-          qrWrap.appendChild(tipDiv);
-        }else{
-          confetti();
-          resultText.textContent = 'Epic win! Show this screen for a premium garment clean or VIP rush credit 🎉';
-          qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg text-center';
-          const msgDiv = document.createElement('div');
-          msgDiv.className = 'text-xl text-stone-700';
-          msgDiv.textContent = 'Present to staff for manual redemption.';
-          qrWrap.appendChild(msgDiv);
-        }
-        if(typeof google !== 'undefined'){
-          google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
-        }
-        winStreak = res ? res.winStreak : 0;
-      };
+      payload.missed = 0;
+      payload.score = total;
+      resultText.textContent = 'Great job! Enjoy this cleaning tip 🌱';
+      qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg';
+      const tipDiv = document.createElement('div');
+      tipDiv.className = 'text-xl text-stone-700 whitespace-pre-line';
+      tipDiv.innerHTML = tip;
+      qrWrap.appendChild(tipDiv);
+      confetti();
       if(typeof google !== 'undefined'){
-        google.script.run.withSuccessHandler(handle).handleWin();
+        google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
+        google.script.run.withSuccessHandler(r=>{winStreak=r.winStreak;}).handleWin();
       }else{
-        handle({success:false, winStreak:0});
+        winStreak = 0;
       }
     }else{
-      const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
       resultText.textContent = 'Thanks for playing! Tap Play Again to try again.';
       qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg';
       const tipDiv = document.createElement('div');

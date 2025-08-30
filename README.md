@@ -1,6 +1,6 @@
 # Stain Blaster Kiosk Game
 
-An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to win instant, QR‑encoded gift certificates. The same build now scales down for phones, keeping the cannon visible and shrinking stains for added challenge.
+An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to reveal a quick cleaning tip. The same build now scales down for phones, keeping the cannon visible and shrinking stains for added challenge.
 
 ## Kiosk/Iframe Build
 
@@ -22,8 +22,8 @@ This kiosk-focused build removes all audio and restricted browser APIs. Apps Scr
 * **Google Apps Script (HTML Service)** – one `Code.gs` backend.
 * **Tailwind CSS via CDN** – rapid, utility-first styling.
 * **Vanilla JS** – fast, dependency-light touch handling.
-* **qrcodejs** & **canvas-confetti** CDNs – QR & celebration effects.
-* **Google Sheets** – prize logging for marketing analytics.
+* **canvas-confetti** CDN – celebration effects.
+* **Google Sheets** – game logging for analytics.
 
 ## Quick Start
 1. The provided `Code.gs` logs to [this Google Sheet](https://docs.google.com/spreadsheets/d/17k6TfJeAERydKa0L0vAXRp6y0q3zckB35dFv9qfDQ6g/edit) by default.
@@ -51,33 +51,8 @@ This kiosk-focused build removes all audio and restricted browser APIs. Apps Scr
 ## Mobile Optimizations
 * Phones render smaller stains, spread them across a wider vertical range, and clear with a quick tap.
 
-## QR Rewards
-* Victories yield tiered rewards, from eco tips to premium garment comps.
-* Even losses present a QR with a short cleaning tip to reinforce eco expertise.
-* Tips rotate from the `LOSS_TIPS` array; edit it to add or tweak loser messages like “Misleading Label” or “Mysterious Lint Monster.”
-
-## Prize Odds
-Default odds live in `index.html`. To adjust without a push, expose them via `logGame` response or a `getConfig()` GAS endpoint, then fetch at runtime.
-
-### Tiered Rewards (per round)
-| Tier | Chance | Reward | Notes |
-|------|--------|--------|-------|
-| Common | 60% | Eco tip or share-GIF | No monetary value |
-| Uncommon | 25% | $5 cleaning credit or free button replacement | Credit = store gift code |
-| Rare | 12% | $10 cleaning credit or comped shirt press | ≤ 5 redemptions/day |
-| Epic | 3% | Comped premium garment (e.g., gown clean) or VIP rush credit | 1/day cap, manager approval |
-
-### Ladder Bonuses
-Consecutive wins unlock a bonus ladder with its own probabilities:
-
-| winStreak | Bonus Credit | Chance |
-|-----------|--------------|-------|
-| 0         | $5           | 50 %  |
-| 1         | $10          | 25 %  |
-| 2         | $25          | 25 %  |
-| 3         | $50          | 10 %  |
-
-Failing a ladder roll still awards a normal prize and resets the streak.
+## Cleaning Tips
+* Every round ends with a rotating eco-friendly cleaning tip to reinforce garment care.
 
 ## Sheet Schema
 Each play logs a row to the Google Sheet with the following columns:
@@ -85,14 +60,12 @@ Each play logs a row to the Google Sheet with the following columns:
 | Column | Header         | Purpose                                 |
 | ------ | -------------- | --------------------------------------- |
 | A      | Timestamp      | When the result was recorded            |
-| B      | Voucher code   | Unique voucher string (blank on loss)   |
-| C      | Prize $        | Dollar value awarded to the player      |
-| D      | Stains cleared | Number of stains the player removed     |
-| E      | Stains missed  | Stains left when time expired           |
-| F      | Seconds taken  | Duration of the game in seconds         |
-| G      | Device         | Source device label (kiosk or mobile)   |
+| B      | Stains cleared | Number of stains the player removed     |
+| C      | Stains missed  | Stains left when time expired           |
+| D      | Seconds taken  | Duration of the game in seconds         |
+| E      | Device         | Source device label (kiosk or mobile)   |
 
-Monitor play counts, difficulty, and cost; pivot by day for prize budgeting.
+Monitor play counts and difficulty; pivot by day for analytics.
 
 ## Local Assets
 * **Shirt background** – 1080 × 1920 PNG of a pressed white dress shirt.
@@ -106,4 +79,3 @@ Internal use only – Dublin Cleaners. Fork freely inside org.
 ## v2 Addendum
 * Rounds locked to 12 seconds.
 * Difficulty scales exponentially each level via stain count/size/spawn interval curve.
-* Rewards are whole-dollar credits or comped garments – never percentage discounts to protect pricing.

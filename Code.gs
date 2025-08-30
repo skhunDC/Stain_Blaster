@@ -13,8 +13,6 @@ const SHEET_ID   = '17k6TfJeAERydKa0L0vAXRp6y0q3zckB35dFv9qfDQ6g';
 const SHEET_NAME = 'StainBlasterLog';
 const HEADERS = [
   'Timestamp',
-  'Voucher code',
-  'Prize $',
   'Stains cleared',
   'Stains missed',
   'Seconds taken',
@@ -45,8 +43,6 @@ function logGame(dataJSON) {
   const d     = JSON.parse(dataJSON);
   sheet.appendRow([
     new Date(),            // Timestamp
-    d.code || '',          // Voucher code (empty on loss)
-    d.prize || 0,          // Dollar value won
     d.score,               // Stains cleared
     d.missed || 0,         // Stains missed
     d.duration,            // Seconds taken
@@ -61,14 +57,6 @@ function getServerTime(){
 }
 
 // ----- Win Streak Helpers -----
-// Prize ladder: attempt to climb for bigger credits on consecutive wins.
-const prizeTable = [
-  {chance: 0.50, credit:  5},
-  {chance: 0.25, credit: 10},
-  {chance: 0.25, credit: 25},
-  {chance: 0.10, credit: 50},
-];
-
 /**
  * Refresh win streak timer at game start. If more than five minutes have
  * elapsed since the last play, the streak (difficulty) resets. Returns the
@@ -85,29 +73,12 @@ function refreshStreakTimer(){
 }
 
 /**
- * Handle a completed win. Depending on the current streak, the player has a
- * chance to earn a larger credit and advance up the ladder. Failure still
- * counts as a normal win; the streak resets to zero.
- *
- * Returns an object {success:Boolean, prize:Number, winStreak:Number} where
- * `success` indicates a ladder hit and `prize` is the credit to award.
+ * Handle a completed win by advancing the streak. Returns the updated value
+ * so the client can adjust difficulty.
  */
 function handleWin(){
   const props = PropertiesService.getUserProperties();
-  const idx   = Number(props.getProperty('winStreak') || 0);
-  const tier  = prizeTable[Math.min(idx, prizeTable.length - 1)];
-
-  if(Math.random() < tier.chance){
-    // SUCCESS ➜ prize path
-    if(idx >= prizeTable.length - 1){
-      props.deleteProperty('winStreak');
-      return {success:true, prize:tier.credit, winStreak:0};
-    }
-    props.setProperty('winStreak', idx + 1);
-    return {success:true, prize:tier.credit, winStreak:idx + 1};
-  }else{
-    // FAIL ➜ normal win
-    props.deleteProperty('winStreak');
-    return {success:false, prize:0, winStreak:0};
-  }
+  const idx   = Number(props.getProperty('winStreak') || 0) + 1;
+  props.setProperty('winStreak', idx);
+  return {winStreak: idx};
 }
