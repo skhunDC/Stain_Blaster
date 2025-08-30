@@ -150,9 +150,16 @@
       class="hidden absolute bottom-2 right-2 z-50 text-[1.2rem] text-white bg-emerald-600 px-4 py-2 rounded-lg shadow-lg text-right"
     ></div>
 
-    <script type="module">
-      import { pickPrize } from "./prize.js";
-      (() => {
+    <script>
+      (async () => {
+        let pickPrize = () => ({
+          tier: "Common",
+          reward: null,
+          minLevel: 1,
+        });
+        try {
+          ({ pickPrize } = await import("./prize.js"));
+        } catch {}
         /* ----- Config ----- */
         const GAME_TIME = 12; // seconds
         const IS_MOBILE = window.innerWidth <= 414;
