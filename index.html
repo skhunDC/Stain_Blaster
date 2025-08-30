@@ -559,14 +559,8 @@
               google.script.run
                 .withFailureHandler(() => {})
                 .logGame(JSON.stringify(payload));
-              google.script.run
-                .withSuccessHandler((r) => {
-                  winStreak = r.winStreak;
-                })
-                .handleLoss();
-            } else {
-              winStreak = 0;
             }
+            winStreak = 0;
           }
           if (checkHighScore(payload.score)) {
             resultText.textContent += " New Su-Stained High Score!";
