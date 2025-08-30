@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Kiosk build: audio & restricted APIs removed for iframe compatibility -->
+<!-- Kiosk build: audio & restricted APIs removed -->
 <html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8" />
@@ -22,16 +22,6 @@
         transform-origin: bottom right;
         pointer-events: none;
         z-index: 50;
-      }
-      @media (max-width: 414px) {
-        #cannon {
-          width: 120px;
-          bottom: 0.5rem;
-          right: 0.5rem;
-        }
-        #startScreen {
-          padding-bottom: 6rem;
-        }
       }
       .bubble {
         position: absolute;
@@ -162,13 +152,12 @@
         } catch {}
         /* ----- Config ----- */
         const GAME_TIME = 12; // seconds
-        const IS_MOBILE = window.innerWidth <= 414;
-        const BASE_STAIN_START = 23; // initial stains (50% more)
-        const BASE_STAIN_SIZE = IS_MOBILE ? 68 : 90; // px (smaller on phones)
-        const BASE_FIRE_RATE = IS_MOBILE ? 1500 : 3000; // ms per extra stain (faster on phones)
-        const TOP_MARGIN = IS_MOBILE ? 10 : 50;
-        const BOTTOM_MARGIN = IS_MOBILE ? 30 : 100;
-        const DEVICE = IS_MOBILE ? "mobile" : "kiosk";
+        const BASE_STAIN_START = 23; // initial stains
+        const BASE_STAIN_SIZE = 90; // px
+        const BASE_FIRE_RATE = 3000; // ms per extra stain
+        const TOP_MARGIN = 50;
+        const BOTTOM_MARGIN = 100;
+        const DEVICE = "kiosk";
         let STAIN_START = BASE_STAIN_START;
         let STAIN_SIZE = BASE_STAIN_SIZE;
         let FIRE_RATE = BASE_FIRE_RATE;
@@ -386,11 +375,7 @@
             remaining--;
             if (remaining === 0 && seconds > 0) win();
           };
-          if (IS_MOBILE) {
-            s.addEventListener("touchstart", remove, { passive: true });
-          } else {
-            s.addEventListener("pointerdown", remove);
-          }
+          s.addEventListener("pointerdown", remove);
           gameArea.appendChild(s);
           remaining++;
           total++;
@@ -475,7 +460,6 @@
             }
           }, 1000);
           fireInterval = setInterval(fireCannon, FIRE_RATE);
-          if (IS_MOBILE) setTimeout(fireCannon, FIRE_RATE / 2);
         }
 
         function win() {
