@@ -8,26 +8,27 @@
  * 2.  Add your Sheet ID below or create one named “StainBlasterLog”.
  */
 // Google Sheet used for logging game results
-const SHEET_ID   = '17k6TfJeAERydKa0L0vAXRp6y0q3zckB35dFv9qfDQ6g';
-const SHEET_NAME = 'StainBlasterLog';
+const SHEET_ID = "17k6TfJeAERydKa0L0vAXRp6y0q3zckB35dFv9qfDQ6g";
+const SHEET_NAME = "StainBlasterLog";
 const HEADERS = [
-  'Timestamp',
-  'Stains cleared',
-  'Stains missed',
-  'Seconds taken',
-  'Prize Tier',
-  'Prize Code'
+  "Timestamp",
+  "Stains cleared",
+  "Stains missed",
+  "Seconds taken",
+  "Prize Tier",
+  "Prize Code",
 ];
 
 /** Serve the kiosk page */
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('index')
-    .setTitle('Dublin Cleaners Game');
+  return HtmlService.createHtmlOutputFromFile("index").setTitle(
+    "Dublin Cleaners Game",
+  );
 }
 
 /** Append one row of JSON-encoded data from client */
 function logGame(dataJSON) {
-  const ss    = SpreadsheetApp.openById(SHEET_ID);
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
   const existingHeaders = sheet
     .getRange(1, 1, 1, Math.max(sheet.getLastColumn(), HEADERS.length))
@@ -39,20 +40,20 @@ function logGame(dataJSON) {
     sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
     sheet.setFrozenRows(1); // keep headers visible
   }
-  const d     = JSON.parse(dataJSON);
+  const d = JSON.parse(dataJSON);
   sheet.appendRow([
-    new Date(),            // Timestamp
-    d.score,               // Stains cleared
-    d.missed || 0,         // Stains missed
-    d.duration,            // Seconds taken
-    d.prizeTier || '',     // Prize tier name
-    d.prizeCode || ''      // Unique prize code if applicable
+    new Date(), // Timestamp
+    d.score, // Stains cleared
+    d.missed || 0, // Stains missed
+    d.duration, // Seconds taken
+    d.prizeTier || "", // Prize tier name
+    d.prizeCode || "", // Unique prize code if applicable
   ]);
   return true;
 }
 
 /** Provide server timestamp so clients can't bypass cooldown by changing device clock */
-function getServerTime(){
+function getServerTime() {
   return Date.now();
 }
 
@@ -62,23 +63,33 @@ function getServerTime(){
  * elapsed since the last play, the streak (difficulty) resets. Returns the
  * current streak value so the client can adjust difficulty immediately.
  */
-function refreshStreakTimer(){
-  const props   = PropertiesService.getUserProperties();
-  const lastWin = Number(props.getProperty('lastPlayTs') || 0);
-  if(Date.now() - lastWin > 5 * 60 * 1000){
-    props.deleteProperty('winStreak');
+function refreshStreakTimer() {
+  const props = PropertiesService.getUserProperties();
+  const lastWin = Number(props.getProperty("lastPlayTs") || 0);
+  if (Date.now() - lastWin > 5 * 60 * 1000) {
+    props.deleteProperty("winStreak");
   }
-  props.setProperty('lastPlayTs', Date.now());
-  return Number(props.getProperty('winStreak') || 0);
+  props.setProperty("lastPlayTs", Date.now());
+  return Number(props.getProperty("winStreak") || 0);
 }
 
 /**
  * Handle a completed win by advancing the streak. Returns the updated value
  * so the client can adjust difficulty.
  */
-function handleWin(){
+function handleWin() {
   const props = PropertiesService.getUserProperties();
-  const idx   = Number(props.getProperty('winStreak') || 0) + 1;
-  props.setProperty('winStreak', idx);
-  return {winStreak: idx};
+  const idx = Number(props.getProperty("winStreak") || 0) + 1;
+  props.setProperty("winStreak", idx);
+  return { winStreak: idx };
+}
+
+/**
+ * Handle a loss by clearing the win streak so difficulty returns to base.
+ * Returns zero for symmetry with handleWin.
+ */
+function handleLoss() {
+  const props = PropertiesService.getUserProperties();
+  props.deleteProperty("winStreak");
+  return { winStreak: 0 };
 }
