@@ -1,8 +1,8 @@
 # Stain Blaster Kiosk Game
 
-An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to reveal a quick cleaning tip and win prizes for discounts off your dry cleaning bill. The same build now scales down for phones, keeping the cannon visible and shrinking stains for added challenge.
+An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to reveal a quick cleaning tip and win prizes for discounts off your dry cleaning bill.
 
-## Kiosk/Iframe Build
+## Kiosk Build
 
 This kiosk-focused build removes all audio and restricted browser APIs. Apps Script is configured with `XFrameOptionsMode.ALLOWALL` so the game can be embedded inside iframes without permission errors.
 
@@ -17,6 +17,7 @@ This kiosk-focused build removes all audio and restricted browser APIs. Apps Scr
 ```
 
 > The iframe intentionally omits `allow` tokens for geolocation, camera, microphone, fullscreen, clipboard, payments, and other restricted features. Permissions are fully controlled by the outer page.
+
 
 ## Stack
 
@@ -53,9 +54,11 @@ This kiosk-focused build removes all audio and restricted browser APIs. Apps Scr
 - Players can start a new round immediately after each game.
 - Consecutive wins continue to ramp difficulty to keep the challenge lively.
 
+
 ## Mobile Optimizations
 
 - Phones render smaller stains, spread them across a wider vertical range, and clear with a quick tap.
+
 
 ## Cleaning Tips
 
@@ -77,6 +80,7 @@ This kiosk-focused build removes all audio and restricted browser APIs. Apps Scr
 
 Each play logs a row to the Google Sheet with the following columns:
 
+
 | Column | Header         | Purpose                                  |
 | ------ | -------------- | ---------------------------------------- |
 | A      | Timestamp      | When the result was recorded             |
@@ -84,6 +88,7 @@ Each play logs a row to the Google Sheet with the following columns:
 | C      | Stains missed  | Stains left when time expired            |
 | D      | Seconds taken  | Duration of the game in seconds          |
 | E      | Device         | Source device label (kiosk or mobile)    |
+
 | F      | Prize Tier     | Awarded tier (Common/Uncommon/Rare/Epic) |
 | G      | Prize Code     | Unique code for credit prizes            |
 
@@ -91,10 +96,12 @@ Monitor play counts and difficulty; pivot by day for analytics.
 
 ## Local Assets
 
+
 - **Shirt background** – 1080 × 1920 PNG of a pressed white dress shirt.
 - **Stain sprites** – semi-transparent PNG splatters (~90 px) with drop shadow; phones render them ~25 % smaller.
 - **Cannon sprite** – small, cartoony launcher anchored bottom-right; shrinks on phones so it never covers the Play button.
   All images can be swapped by editing `index.html`.
+
 
 ## License
 
