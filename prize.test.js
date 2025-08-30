@@ -3,11 +3,17 @@ import assert from "node:assert/strict";
 import { PRIZES, pickPrize } from "./prize.js";
 
 function expected(level) {
-  const available = PRIZES.filter((p) => level >= p.minLevel);
-  const total = available.reduce((sum, p) => sum + p.probability, 0);
+  const fallback = PRIZES.find((p) => level >= p.minLevel);
   const result = {};
-  for (const p of available) {
-    result[p.tier] = p.probability / total;
+  for (const p of PRIZES) {
+    result[p.tier] = 0;
+  }
+  for (const p of PRIZES) {
+    if (level >= p.minLevel) {
+      result[p.tier] += p.probability;
+    } else {
+      result[fallback.tier] += p.probability;
+    }
   }
   return result;
 }
@@ -35,7 +41,7 @@ test("pickPrize returns only allowed prizes", () => {
 
 test("pickPrize distribution is fair", () => {
   const ITER = 100000;
-  const tolerance = 0.02; // 2%
+  const tolerance = 0.01; // 1%
   for (const level of [1, 2, 3]) {
     const counts = simulate(level, ITER);
     const exp = expected(level);
