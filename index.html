@@ -151,18 +151,20 @@
           ({ pickPrize } = await import("./prize.js"));
         } catch {}
         /* ----- Config ----- */
-        const GAME_TIME = 12; // seconds
+
         const BASE_STAIN_START = 23; // initial stains
         const BASE_STAIN_SIZE = 90; // px
         const BASE_FIRE_RATE = 3000; // ms per extra stain
         const TOP_MARGIN = 50;
         const BOTTOM_MARGIN = 100;
         const DEVICE = "kiosk";
+
         let STAIN_START = BASE_STAIN_START;
         let STAIN_SIZE = BASE_STAIN_SIZE;
         let FIRE_RATE = BASE_FIRE_RATE;
         let winStreak = 0;
         let timeOffset = 0; // server vs client clock diff
+        let resetTimer;
 
         if (typeof google !== "undefined") {
           google.script.run
@@ -434,6 +436,7 @@
         }
 
         function begin() {
+          clearTimeout(resetTimer);
           applyDifficulty();
           startScreen.classList.add("hidden");
           clearTimeout(bubbleTimer);
@@ -580,6 +583,10 @@
           if (checkHighScore(payload.score)) {
             resultText.textContent += " New High Score!";
           }
+          clearTimeout(resetTimer);
+          resetTimer = setTimeout(() => {
+            if (!resultScreen.classList.contains("hidden")) reset();
+          }, RESET_DELAY);
         }
 
         function confetti() {
@@ -594,6 +601,7 @@
         }
 
         function reset() {
+          clearTimeout(resetTimer);
           resultScreen.classList.add("hidden");
           startScreen.classList.remove("hidden");
           resultShown = false;
@@ -612,15 +620,6 @@
           });
 
         scheduleBubble();
-
-        setInterval(() => {
-          if (
-            !resultScreen.classList.contains("hidden") &&
-            now() - startTime > (GAME_TIME + 30) * 1000
-          ) {
-            reset();
-          }
-        }, 5000);
       })();
     </script>
   </body>
