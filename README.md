@@ -54,6 +54,15 @@ This kiosk-focused build removes all audio and restricted browser APIs. Apps Scr
 ## Cleaning Tips
 * Every round ends with a rotating eco-friendly cleaning tip to reinforce garment care.
 
+## Prize Tiers
+
+| Tier      | Probability | Reward                                  | Notes                                                                 |
+| --------- | ----------- | --------------------------------------- | --------------------------------------------------------------------- |
+| Common    | 60%         | Cleaning Tip                            | No monetary value                                                     |
+| Uncommon  | 25%         | $5 cleaning credit                      | Take a Photo of Credit & Show to CSR for Credit                       |
+| Rare      | 12%         | $10 cleaning credit (Level 2+)          | Take a Photo of Credit & Show to CSR for Credit                       |
+| Epic      | 3%          | $50 premium garment credit (Level 3+)   | 1/day cap, manager approval. Take a Photo of Credit & Show to CSR     |
+
 ## Sheet Schema
 Each play logs a row to the Google Sheet with the following columns:
 
@@ -64,6 +73,8 @@ Each play logs a row to the Google Sheet with the following columns:
 | C      | Stains missed  | Stains left when time expired           |
 | D      | Seconds taken  | Duration of the game in seconds         |
 | E      | Device         | Source device label (kiosk or mobile)   |
+| F      | Prize Tier     | Awarded tier (Common/Uncommon/Rare/Epic) |
+| G      | Prize Code     | Unique code for credit prizes           |
 
 Monitor play counts and difficulty; pivot by day for analytics.
 

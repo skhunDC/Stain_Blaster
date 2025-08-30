@@ -16,7 +16,9 @@ const HEADERS = [
   'Stains cleared',
   'Stains missed',
   'Seconds taken',
-  'Device'            // 'kiosk' or 'mobile'
+  'Device',           // 'kiosk' or 'mobile'
+  'Prize Tier',
+  'Prize Code'
 ];
 
 /** Serve the kiosk page */
@@ -46,7 +48,9 @@ function logGame(dataJSON) {
     d.score,               // Stains cleared
     d.missed || 0,         // Stains missed
     d.duration,            // Seconds taken
-    d.device || 'kiosk'    // Device label
+    d.device || 'kiosk',   // Device label
+    d.prizeTier || '',     // Prize tier name
+    d.prizeCode || ''      // Unique prize code if applicable
   ]);
   return true;
 }

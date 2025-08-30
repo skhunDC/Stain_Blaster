@@ -223,6 +223,44 @@
             TIP_DISCLAIMER,
         ];
 
+        const PRIZES = [
+          { tier: "Common", probability: 0.6, reward: null, minLevel: 1 },
+          {
+            tier: "Uncommon",
+            probability: 0.25,
+            reward: "$5 cleaning credit",
+            minLevel: 1,
+          },
+          {
+            tier: "Rare",
+            probability: 0.12,
+            reward: "$10 cleaning credit",
+            minLevel: 2,
+          },
+          {
+            tier: "Epic",
+            probability: 0.03,
+            reward: "$50 premium garment credit",
+            minLevel: 3,
+          },
+        ];
+
+        function pickPrize(level) {
+          const r = Math.random();
+          let sum = 0;
+          for (const p of PRIZES) {
+            sum += p.probability;
+            if (r < sum) {
+              return level >= p.minLevel ? p : PRIZES[0];
+            }
+          }
+          return PRIZES[0];
+        }
+
+        function genCode() {
+          return `DC-${Date.now().toString(36).toUpperCase()}`;
+        }
+
         /* ----- DOM refs ----- */
         const startScreen = document.getElementById("startScreen");
         const gameArea = document.getElementById("gameArea");
@@ -448,9 +486,39 @@
           if (success) {
             payload.missed = 0;
             payload.score = total;
-            resultText.textContent = "Great job! Enjoy this cleaning tip 🌱";
+            const level = winStreak + 1;
+            const prize = pickPrize(level);
+            payload.prizeTier = prize.tier;
+            let code = "";
+            if (prize.tier === "Common") {
+              resultText.textContent = "Great job! Enjoy this cleaning tip 🌱";
+            } else {
+              resultText.textContent = `Great job! You won ${prize.reward}!`;
+            }
             qrWrap.className =
               "p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg";
+            if (prize.tier !== "Common") {
+              const prizeEl = document.createElement("div");
+              prizeEl.className = "text-2xl text-emerald-700 font-bold text-center";
+              prizeEl.textContent = prize.reward;
+              qrWrap.appendChild(prizeEl);
+              const noteEl = document.createElement("div");
+              noteEl.className = "text-sm text-stone-600 text-center";
+              noteEl.textContent = "Take a Photo of Credit & Show to CSR for Credit";
+              qrWrap.appendChild(noteEl);
+              if (prize.tier === "Epic") {
+                const capEl = document.createElement("div");
+                capEl.className = "text-xs text-stone-500 text-center";
+                capEl.textContent = "1/day cap, manager approval";
+                qrWrap.appendChild(capEl);
+              }
+              code = genCode();
+              payload.prizeCode = code;
+              const codeEl = document.createElement("div");
+              codeEl.className = "font-mono text-lg text-center";
+              codeEl.textContent = `Code: ${code}`;
+              qrWrap.appendChild(codeEl);
+            }
             const tipDiv = document.createElement("div");
             tipDiv.className = "text-xl text-stone-700 whitespace-pre-line";
             tipDiv.innerHTML = tip;
