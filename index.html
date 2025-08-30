@@ -309,22 +309,25 @@
           bubbleTimer,
           resultShown = false;
 
+        let inMemoryHighScore = { score: 0, timestamp: 0 };
+
         function loadHighScore() {
           try {
             return (
-              JSON.parse(localStorage.getItem("sbHighScore") || "null") || {
-                score: 0,
-                timestamp: 0,
-              }
+              JSON.parse(localStorage.getItem("sbHighScore") || "null") ||
+              inMemoryHighScore
             );
           } catch {
-            return { score: 0, timestamp: 0 };
+            return inMemoryHighScore;
           }
         }
 
         function saveHighScore(score) {
           const data = { score, timestamp: Date.now() };
-          localStorage.setItem("sbHighScore", JSON.stringify(data));
+          try {
+            localStorage.setItem("sbHighScore", JSON.stringify(data));
+          } catch {}
+          inMemoryHighScore = data;
           return data;
         }
 
