@@ -140,7 +140,8 @@
       class="hidden absolute bottom-2 right-2 z-50 text-[1.2rem] text-white bg-emerald-600 px-4 py-2 rounded-lg shadow-lg text-right"
     ></div>
 
-    <script>
+    <script type="module">
+      import { pickPrize } from "./prize.js";
       (() => {
         /* ----- Config ----- */
         const GAME_TIME = 12; // seconds
@@ -215,40 +216,6 @@
           "🌱 <strong>Eco-cleaning matters—ask your cleaner</strong>\nAt Dublin Cleaners, we use biodegradable solvents that are gentle on fabrics and the planet. Garment care without the guilt." +
             TIP_DISCLAIMER,
         ];
-
-        const PRIZES = [
-          { tier: "Common", probability: 0.6, reward: null, minLevel: 1 },
-          {
-            tier: "Uncommon",
-            probability: 0.25,
-            reward: "$5 cleaning credit",
-            minLevel: 1,
-          },
-          {
-            tier: "Rare",
-            probability: 0.12,
-            reward: "$10 cleaning credit",
-            minLevel: 2,
-          },
-          {
-            tier: "Epic",
-            probability: 0.03,
-            reward: "$50 premium garment credit",
-            minLevel: 3,
-          },
-        ];
-
-        function pickPrize(level) {
-          const r = Math.random();
-          let sum = 0;
-          for (const p of PRIZES) {
-            sum += p.probability;
-            if (r < sum) {
-              return level >= p.minLevel ? p : PRIZES[0];
-            }
-          }
-          return PRIZES[0];
-        }
 
         function genCode() {
           return `DC-${Date.now().toString(36).toUpperCase()}`;
