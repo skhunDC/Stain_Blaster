@@ -646,13 +646,15 @@
           scheduleBubble();
         }
 
-        playBtn.addEventListener("click", () => {
+        playBtn.addEventListener("pointerdown", () => {
           startRound();
         });
-        document.getElementById("restartBtn").addEventListener("click", () => {
-          resultScreen.classList.add("hidden");
-          startRound();
-        });
+        document
+          .getElementById("restartBtn")
+          .addEventListener("pointerdown", () => {
+            resultScreen.classList.add("hidden");
+            startRound();
+          });
 
         scheduleBubble();
 
