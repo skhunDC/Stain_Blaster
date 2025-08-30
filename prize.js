@@ -20,15 +20,20 @@ export const PRIZES = [
   },
 ];
 
+// Picks a prize based on the configured probabilities while ensuring
+// players never receive locked tiers. Probability mass from locked
+// tiers falls back to the first available tier ("Common"), keeping the
+// advertised odds for the remaining prizes consistent across levels.
 export function pickPrize(level) {
-  const available = PRIZES.filter((p) => level >= p.minLevel);
-  const total = available.reduce((sum, p) => sum + p.probability, 0);
-  let r = Math.random() * total;
-  for (const p of available) {
-    if (r < p.probability) {
-      return p;
+  const fallback = PRIZES.find((p) => level >= p.minLevel);
+  if (!fallback) return PRIZES[0];
+  const r = Math.random();
+  let cumulative = 0;
+  for (const p of PRIZES) {
+    cumulative += p.probability;
+    if (r < cumulative) {
+      return level >= p.minLevel ? p : fallback;
     }
-    r -= p.probability;
   }
-  return available[0];
+  return fallback;
 }
