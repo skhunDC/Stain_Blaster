@@ -1,355 +1,528 @@
-<!DOCTYPE html>
+<!doctype html>
 <!-- Kiosk build: audio & restricted APIs removed for iframe compatibility -->
 <html lang="en" class="h-full">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stain Blaster – Dublin Cleaners</title>
-  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <style>
-    .stain{position:absolute;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.4));z-index:10;}
-    #cannon{position:absolute;width:220px;height:auto;bottom:1rem;right:1rem;transform-origin:bottom right;pointer-events:none;z-index:50;}
-    @media (max-width:414px){
-      #cannon{width:120px;bottom:.5rem;right:.5rem;}
-      #startScreen{padding-bottom:6rem;}
-    }
-    .bubble{position:absolute;pointer-events:none;}
-    .bubble::before{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);border-width:10px 10px 0 10px;border-style:solid;border-color:#059669 transparent transparent transparent;}
-    .bubble::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-width:8px 8px 0 8px;border-style:solid;border-color:#fff transparent transparent transparent;}
-    @keyframes bubble-in{0%{transform:scale(0.6);opacity:0;}60%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
-    @keyframes bubble-out{to{transform:scale(0.8);opacity:0;}}
-  </style>
-</head>
-<body class="h-full bg-white overflow-hidden">
-  <!-- Attract / Start Screen -->
-  <div id="startScreen" class="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-white touch-none select-none">
-    <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png" alt="Dublin Cleaners" class="w-56">
-    <div class="text-5xl font-bold text-stone-700 text-center leading-tight">Stain Blaster</div>
-    <div class="text-xl text-stone-500 text-center">Swipe the stains away in 12 seconds<br>and reveal a cleaning tip!</div>
-    <button id="playBtn" class="px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition">Play Now</button>
-  </div>
-
-  <img id="cannon" src="https://www.dublincleaners.com/wp-content/uploads/2025/08/Canon.png" alt="cannon" class="select-none">
-
-  <!-- Game Area -->
-  <div id="gameArea" class="absolute inset-0 hidden bg-[url('https://www.dublincleaners.com/wp-content/uploads/2025/08/Whiteshirt.png')] bg-cover">
-    <!-- stains injected here -->
-    <div id="timer" class="absolute top-6 left-1/2 -translate-x-1/2 text-5xl font-bold text-white drop-shadow">12</div>
-  </div>
-
-  <!-- Result Screen -->
-  <div id="resultScreen" class="absolute inset-0 hidden flex flex-col items-center justify-center gap-6 bg-white text-center">
-    <div id="resultText" class="text-4xl font-semibold text-stone-700"></div>
-    <div id="qrWrap" class="p-4 bg-stone-100 rounded-2xl shadow-inner"></div>
-    <button id="restartBtn" class="mt-8 px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition">
-      Play Again
-    </button>
-  </div>
-
-<script>
-(() => {
-  /* ----- Config ----- */
-  const GAME_TIME   = 12;                 // seconds
-  const IS_MOBILE   = window.innerWidth <= 414;
-  const BASE_STAIN_START = 23;           // initial stains (50% more)
-  const BASE_STAIN_SIZE  = IS_MOBILE ? 68 : 90; // px (smaller on phones)
-  const BASE_FIRE_RATE   = IS_MOBILE ? 1500 : 3000; // ms per extra stain (faster on phones)
-  const TOP_MARGIN    = IS_MOBILE ? 10 : 50;
-  const BOTTOM_MARGIN = IS_MOBILE ? 30 : 100;
-  const DEVICE      = IS_MOBILE ? 'mobile' : 'kiosk';
-  let STAIN_START = BASE_STAIN_START;
-  let STAIN_SIZE  = BASE_STAIN_SIZE;
-  let FIRE_RATE   = BASE_FIRE_RATE;
-  let winStreak   = 0;
-  let timeOffset  = 0;                        // server vs client clock diff
-
-  if(typeof google !== 'undefined'){
-    google.script.run.withSuccessHandler(t=>{timeOffset = t - Date.now();}).getServerTime();
-  }
-
-  function now(){ return Date.now() + timeOffset; }
-
-  function applyDifficulty(){
-    STAIN_SIZE  = BASE_STAIN_SIZE / Math.pow(1.2, winStreak);
-    STAIN_START = Math.round(BASE_STAIN_START * Math.pow(1.15, winStreak));
-    FIRE_RATE   = BASE_FIRE_RATE * Math.pow(0.85, winStreak);
-  }
-  const STAIN_IMAGES = [
-    'https://www.dublincleaners.com/wp-content/uploads/2025/08/Ketchup.png',
-    'https://www.dublincleaners.com/wp-content/uploads/2025/08/Coffee.png',
-    'https://www.dublincleaners.com/wp-content/uploads/2025/08/Dirt.png',
-    'https://www.dublincleaners.com/wp-content/uploads/2025/08/Wine.png'
-  ];
-  const BUBBLE_LINES = [
-    'Think you can wipe all the stains?',
-    'Eco cleaning tips await!',
-    'Swipe fast – tips await!',
-    'Spotless skills? Prove it!',
-    'Tap ▶ to blast and learn!',
-    'Your dry-cleaner believes in you 😎'
-  ];
-  const BUBBLE_INTERVAL = 4000; // ms between spawns
-  const BUBBLE_JITTER   = 1000; // ms random jitter
-  const BUBBLE_DURATION = 5000; // ms visible
-  const cleaningTips = [
-    "🧼 <strong>Always blot, never rub</strong>\nSpilled wine or coffee? Gently blot with a clean white cloth—rubbing pushes the stain deeper and can damage delicate fibers.",
-    "🚫 <strong>Skip the DIY vinegar on silk</strong>\nNatural doesn’t always mean safe. For fine fabrics like silk or wool, avoid vinegar or baking soda—let a textile expert handle it.",
-    "👗 <strong>Use garment bags for more than travel</strong>\nProtect your cashmere, gowns, and couture pieces with breathable garment bags—especially in humid or scented closets.",
-    "⏱️ <strong>Treat stains fast—but gently</strong>\nIf you can’t get to us right away, lightly dampen the stain with cold water. Don’t apply heat or soap—it could set the stain permanently.",
-    "🌬️ <strong>Air out, don’t over-wash</strong>\nFor suits, coats, and dresses, let them breathe between wears. Over-cleaning can shorten the life of premium fabrics.",
-    "📎 <strong>Dry cleaning tags go on the hanger, not the sleeve</strong>\nKeep those paper sleeves off your garments. We return items pressed and ready—hang them, store them, wear them.",
-    "💨 <strong>Use a steamer, not an iron</strong>\nSteaming is gentler on delicate fabrics and helps preserve the finish. Perfect for touch-ups between professional cleanings.",
-    "👔 <strong>Mind your collars and cuffs</strong>\nThese spots collect oils, makeup, and sweat. If you want your shirts to last longer, pre-treat them or clean them more often.",
-    "🪵 <strong>Skip the wire hangers</strong>\nInvest in wooden or padded hangers. Wire hangers can misshape shoulders and leave rust or stretch marks.",
-    "🌱 <strong>Eco-cleaning matters—ask your cleaner</strong>\nAt Dublin Cleaners, we use biodegradable solvents that are gentle on fabrics and the planet. Garment care without the guilt."
-  ];
-
-  /* ----- DOM refs ----- */
-  const startScreen = document.getElementById('startScreen');
-  const gameArea    = document.getElementById('gameArea');
-  const timerEl     = document.getElementById('timer');
-  const cannon      = document.getElementById('cannon');
-  const resultScreen= document.getElementById('resultScreen');
-  const resultText  = document.getElementById('resultText');
-  const qrWrap      = document.getElementById('qrWrap');
-  const logo        = document.getElementById('logo');
-  const playBtn     = document.getElementById('playBtn');
-  let remaining, total, seconds, countdown, startTime, fireInterval, bubbleTimer,
-      resultShown = false;
-
-  function randomImage(){
-    return STAIN_IMAGES[Math.floor(Math.random()*STAIN_IMAGES.length)];
-  }
-
-  function randomLine(){
-    return BUBBLE_LINES[Math.floor(Math.random()*BUBBLE_LINES.length)];
-  }
-
-  function spawnBubble(){
-    if(startScreen.classList.contains('hidden')) return;
-    if(startScreen.querySelectorAll('.bubble').length >= 3) return;
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble max-w-[220px] px-4 py-2 rounded-2xl border-2 border-emerald-600 bg-white text-emerald-700 font-bold text-center shadow-md pointer-events-none';
-    bubble.innerHTML = `${randomLine()}<svg class="absolute -top-2 -right-2 w-4 h-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 0l2.09 6.26L18.18 7.5l-5.09 3.7L14.18 18 10 14.27 5.82 18l1.09-6.8L1.82 7.5l6.09-1.24L10 0z"/></svg>`;
-    startScreen.appendChild(bubble);
-    const rect = startScreen.getBoundingClientRect();
-    const maxY = rect.height * 0.6;
-    const avoid = [logo.getBoundingClientRect(), playBtn.getBoundingClientRect()];
-    const bw = bubble.offsetWidth;
-    const bh = bubble.offsetHeight;
-    let x, y, tries = 0, ok;
-    do {
-      x = Math.random() * (rect.width - bw);
-      y = Math.random() * (maxY - bh);
-      ok = !avoid.some(r => {
-        const rx = r.left - rect.left;
-        const ry = r.top - rect.top;
-        return !(x + bw < rx || x > rx + r.width || y + bh < ry || y > ry + r.height);
-      });
-      tries++;
-    } while(!ok && tries < 10);
-    bubble.style.left = x + 'px';
-    bubble.style.top  = y + 'px';
-    bubble.style.animation = 'bubble-in 0.6s ease-out, bubble-out 0.6s ease-in 4.4s forwards';
-    setTimeout(() => bubble.remove(), BUBBLE_DURATION);
-  }
-
-  function scheduleBubble(){
-    if(startScreen.classList.contains('hidden')) return;
-    bubbleTimer = setTimeout(() => {
-      spawnBubble();
-      scheduleBubble();
-    }, BUBBLE_INTERVAL + (Math.random()*2-1)*BUBBLE_JITTER);
-  }
-
-  function spawnStain(x,y){
-    const s = document.createElement('img');
-    s.src = randomImage();
-    s.className = 'stain';
-    const rect = gameArea.getBoundingClientRect();
-    const spawnW = rect.width  - STAIN_SIZE;
-    const spawnH = rect.height - STAIN_SIZE - TOP_MARGIN - BOTTOM_MARGIN;
-    if(x===undefined){ x = Math.random()*spawnW; }
-    if(y===undefined){ y = Math.random()*spawnH + TOP_MARGIN; }
-    s.style.left   = x+'px';
-    s.style.top    = y+'px';
-    s.style.width  = STAIN_SIZE+'px';
-    s.style.height = STAIN_SIZE+'px';
-    s.style.transform = `rotate(${Math.random()*360}deg)`;
-    const remove = () => {
-      s.remove();
-      remaining--;
-      if(remaining===0 && seconds>0) win();
-    };
-    if(IS_MOBILE){
-      s.addEventListener('touchstart', remove, {passive:true});
-    }else{
-      s.addEventListener('pointerdown', remove);
-    }
-    gameArea.appendChild(s);
-    remaining++; total++;
-    return s;
-  }
-
-  function animateProjectile(el,x0,y0,x1,y1){
-    const duration = 800;
-    const arc = 150;
-    const start = performance.now();
-    function frame(now){
-      const t = Math.min((now-start)/duration,1);
-      const x = x0 + (x1-x0)*t;
-      const y = y0 + (y1-y0)*t - arc*Math.sin(Math.PI*t);
-      el.style.left = x+'px';
-      el.style.top  = y+'px';
-      if(t<1){
-        requestAnimationFrame(frame);
-      }else{
-        el.style.left = x1+'px';
-        el.style.top  = y1+'px';
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stain Blaster – Dublin Cleaners</title>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+      .stain {
+        position: absolute;
+        filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
+        z-index: 10;
       }
-    }
-    requestAnimationFrame(frame);
-  }
-
-  function fireCannon(){
-    const rect = cannon.getBoundingClientRect();
-    const area = gameArea.getBoundingClientRect();
-    const mouthX = rect.left + rect.width*0.15 - area.left;
-    const mouthY = rect.top  + rect.height*0.15 - area.top;
-    const targetX = Math.random()*(area.width - STAIN_SIZE);
-    const targetY = Math.random()*(area.height - STAIN_SIZE - TOP_MARGIN - BOTTOM_MARGIN) + TOP_MARGIN;
-    const angle = Math.atan2(targetY - mouthY, targetX - mouthX);
-    cannon.style.transform = `rotate(${angle}rad)`;
-    const offset = 30;
-    const startX = mouthX + Math.cos(angle)*offset;
-    const startY = mouthY + Math.sin(angle)*offset;
-    const s = spawnStain(startX, startY);
-    animateProjectile(s,startX,startY,targetX,targetY);
-  }
-
-  function startRound(){
-    if(typeof google !== 'undefined'){
-      google.script.run.withSuccessHandler(s=>{winStreak=s; begin();}).refreshStreakTimer();
-    }else{
-      begin();
-    }
-  }
-
-  function begin(){
-    applyDifficulty();
-    startScreen.classList.add('hidden');
-    clearTimeout(bubbleTimer);
-    startScreen.querySelectorAll('.bubble').forEach(b=>b.remove());
-    gameArea.classList.remove('hidden');
-    gameArea.querySelectorAll('.stain').forEach(s=>s.remove());
-    if(!gameArea.contains(timerEl)) gameArea.appendChild(timerEl);
-    remaining=0; total=0; resultShown=false;
-    for(let i=0;i<STAIN_START;i++) spawnStain();
-    seconds = GAME_TIME;
-    timerEl.textContent = seconds;
-    startTime = now();
-    countdown = setInterval(()=>{
-      seconds--;
-      timerEl.textContent = seconds;
-      if(seconds<=0){
-        clearInterval(countdown);
-        clearInterval(fireInterval);
-        lose();
+      #cannon {
+        position: absolute;
+        width: 220px;
+        height: auto;
+        bottom: 1rem;
+        right: 1rem;
+        transform-origin: bottom right;
+        pointer-events: none;
+        z-index: 50;
       }
-    },1000);
-    fireInterval = setInterval(fireCannon, FIRE_RATE);
-    if(IS_MOBILE) setTimeout(fireCannon, FIRE_RATE/2);
-  }
-
-  function win(){
-    clearInterval(countdown);
-    clearInterval(fireInterval);
-    // Double-check no stain elements remain before allowing a win
-    const stainsLeft = gameArea.querySelectorAll('.stain').length;
-    showResult(stainsLeft === 0);
-  }
-
-  function lose(){
-    showResult(false);
-  }
-
-  function showResult(success){
-    if(resultShown) return;
-    resultShown = true;
-    gameArea.classList.add('hidden');
-    resultScreen.classList.remove('hidden');
-    qrWrap.innerHTML = '';
-    qrWrap.className = 'p-4 bg-stone-100 rounded-2xl shadow-inner';
-    resultText.textContent = '';
-    const payload = {
-      score: total - remaining,
-      missed: remaining,
-      duration: (now()-startTime)/1000,
-      device: DEVICE
-    };
-    const tip = cleaningTips[Math.floor(Math.random()*cleaningTips.length)];
-    if(success){
-      payload.missed = 0;
-      payload.score = total;
-      resultText.textContent = 'Great job! Enjoy this cleaning tip 🌱';
-      qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg';
-      const tipDiv = document.createElement('div');
-      tipDiv.className = 'text-xl text-stone-700 whitespace-pre-line';
-      tipDiv.innerHTML = tip;
-      qrWrap.appendChild(tipDiv);
-      confetti();
-      if(typeof google !== 'undefined'){
-        google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
-        google.script.run.withSuccessHandler(r=>{winStreak=r.winStreak;}).handleWin();
-      }else{
-        winStreak = 0;
+      @media (max-width: 414px) {
+        #cannon {
+          width: 120px;
+          bottom: 0.5rem;
+          right: 0.5rem;
+        }
+        #startScreen {
+          padding-bottom: 6rem;
+        }
       }
-    }else{
-      resultText.textContent = 'Thanks for playing! Tap Play Again to try again.';
-      qrWrap.className = 'p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg';
-      const tipDiv = document.createElement('div');
-      tipDiv.className = 'text-xl text-stone-700 whitespace-pre-line';
-      tipDiv.innerHTML = tip;
-      qrWrap.appendChild(tipDiv);
-      if(typeof google !== 'undefined'){
-        google.script.run.withFailureHandler(()=>{}).logGame(JSON.stringify(payload));
+      .bubble {
+        position: absolute;
+        pointer-events: none;
       }
-      winStreak = 0;
-    }
-  }
+      .bubble::before {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 10px 10px 0 10px;
+        border-style: solid;
+        border-color: #059669 transparent transparent transparent;
+      }
+      .bubble::after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 8px 8px 0 8px;
+        border-style: solid;
+        border-color: #fff transparent transparent transparent;
+      }
+      @keyframes bubble-in {
+        0% {
+          transform: scale(0.6);
+          opacity: 0;
+        }
+        60% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      @keyframes bubble-out {
+        to {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body class="h-full bg-white overflow-hidden">
+    <!-- Attract / Start Screen -->
+    <div
+      id="startScreen"
+      class="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-white touch-none select-none"
+    >
+      <img
+        id="logo"
+        src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
+        alt="Dublin Cleaners"
+        class="w-56"
+      />
+      <div class="text-5xl font-bold text-stone-700 text-center leading-tight">
+        Stain Blaster
+      </div>
+      <div class="text-xl text-stone-500 text-center">
+        Swipe the stains away in 12 seconds<br />and reveal a cleaning tip!
+      </div>
+      <div class="text-xs text-stone-400 text-center max-w-md px-4">
+        By pressing "Play Now," you agree to our disclaimer: Ensure safe for
+        care labels and understand restrictions. ATTEMPT AT YOUR OWN RISK – we
+        are not responsible for any damage you cause to your garment.
+      </div>
+      <button
+        id="playBtn"
+        class="px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition"
+      >
+        Play Now
+      </button>
+    </div>
 
-  function confetti(){
-    if(window.confetti){
-      window.confetti({particleCount:160, spread:90, origin:{y:0.6}, zIndex:1});
-    }
-  }
+    <img
+      id="cannon"
+      src="https://www.dublincleaners.com/wp-content/uploads/2025/08/Canon.png"
+      alt="cannon"
+      class="select-none"
+    />
 
-  function reset(){
-    resultScreen.classList.add('hidden');
-    startScreen.classList.remove('hidden');
-    resultShown = false;
-    scheduleBubble();
-  }
+    <!-- Game Area -->
+    <div
+      id="gameArea"
+      class="absolute inset-0 hidden bg-[url('https://www.dublincleaners.com/wp-content/uploads/2025/08/Whiteshirt.png')] bg-cover"
+    >
+      <!-- stains injected here -->
+      <div
+        id="timer"
+        class="absolute top-6 left-1/2 -translate-x-1/2 text-5xl font-bold text-white drop-shadow"
+      >
+        12
+      </div>
+    </div>
 
-  playBtn.addEventListener('click', () => {
-    startRound();
-  });
-  document.getElementById('restartBtn').addEventListener('click', () => {
-    resultScreen.classList.add('hidden');
-    startRound();
-  });
+    <!-- Result Screen -->
+    <div
+      id="resultScreen"
+      class="absolute inset-0 hidden flex flex-col items-center justify-center gap-6 bg-white text-center"
+    >
+      <div id="resultText" class="text-4xl font-semibold text-stone-700"></div>
+      <div id="qrWrap" class="p-4 bg-stone-100 rounded-2xl shadow-inner"></div>
+      <button
+        id="restartBtn"
+        class="mt-8 px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition"
+      >
+        Play Again
+      </button>
+    </div>
 
-  scheduleBubble();
+    <script>
+      (() => {
+        /* ----- Config ----- */
+        const GAME_TIME = 12; // seconds
+        const IS_MOBILE = window.innerWidth <= 414;
+        const BASE_STAIN_START = 23; // initial stains (50% more)
+        const BASE_STAIN_SIZE = IS_MOBILE ? 68 : 90; // px (smaller on phones)
+        const BASE_FIRE_RATE = IS_MOBILE ? 1500 : 3000; // ms per extra stain (faster on phones)
+        const TOP_MARGIN = IS_MOBILE ? 10 : 50;
+        const BOTTOM_MARGIN = IS_MOBILE ? 30 : 100;
+        const DEVICE = IS_MOBILE ? "mobile" : "kiosk";
+        let STAIN_START = BASE_STAIN_START;
+        let STAIN_SIZE = BASE_STAIN_SIZE;
+        let FIRE_RATE = BASE_FIRE_RATE;
+        let winStreak = 0;
+        let timeOffset = 0; // server vs client clock diff
 
-  setInterval(()=>{
-    if(!resultScreen.classList.contains('hidden') &&
-       now()-startTime > (GAME_TIME+30)*1000){
-      reset();
-    }
-  },5000);
+        if (typeof google !== "undefined") {
+          google.script.run
+            .withSuccessHandler((t) => {
+              timeOffset = t - Date.now();
+            })
+            .getServerTime();
+        }
 
-})();
-</script>
-</body>
+        function now() {
+          return Date.now() + timeOffset;
+        }
+
+        function applyDifficulty() {
+          STAIN_SIZE = BASE_STAIN_SIZE / Math.pow(1.2, winStreak);
+          STAIN_START = Math.round(
+            BASE_STAIN_START * Math.pow(1.15, winStreak),
+          );
+          FIRE_RATE = BASE_FIRE_RATE * Math.pow(0.85, winStreak);
+        }
+        const STAIN_IMAGES = [
+          "https://www.dublincleaners.com/wp-content/uploads/2025/08/Ketchup.png",
+          "https://www.dublincleaners.com/wp-content/uploads/2025/08/Coffee.png",
+          "https://www.dublincleaners.com/wp-content/uploads/2025/08/Dirt.png",
+          "https://www.dublincleaners.com/wp-content/uploads/2025/08/Wine.png",
+        ];
+        const BUBBLE_LINES = [
+          "Think you can wipe all the stains?",
+          "Eco cleaning tips await!",
+          "Swipe fast – tips await!",
+          "Spotless skills? Prove it!",
+          "Tap ▶ to blast and learn!",
+          "Your dry-cleaner believes in you 😎",
+        ];
+        const BUBBLE_INTERVAL = 4000; // ms between spawns
+        const BUBBLE_JITTER = 1000; // ms random jitter
+        const BUBBLE_DURATION = 5000; // ms visible
+        const TIP_DISCLAIMER =
+          "\n\n<em>Ensure safe for care labels and understand restrictions. ATTEMPT AT YOUR OWN RISK – we are not responsible for any damage you cause to your garment.</em>";
+        const cleaningTips = [
+          "🧼 <strong>Always blot, never rub</strong>\nSpilled wine or coffee? Gently blot with a clean white cloth—rubbing pushes the stain deeper and can damage delicate fibers." +
+            TIP_DISCLAIMER,
+          "🚫 <strong>Skip the DIY vinegar on silk</strong>\nNatural doesn’t always mean safe. For fine fabrics like silk or wool, avoid vinegar or baking soda—let a textile expert handle it." +
+            TIP_DISCLAIMER,
+          "👗 <strong>Use garment bags for more than travel</strong>\nProtect your cashmere, gowns, and couture pieces with breathable garment bags—especially in humid or scented closets." +
+            TIP_DISCLAIMER,
+          "⏱️ <strong>Treat stains fast—but gently</strong>\nIf you can’t get to us right away, lightly dampen the stain with cold water. Don’t apply heat or soap—it could set the stain permanently." +
+            TIP_DISCLAIMER,
+          "🌬️ <strong>Air out, don’t over-wash</strong>\nFor suits, coats, and dresses, let them breathe between wears. Over-cleaning can shorten the life of premium fabrics." +
+            TIP_DISCLAIMER,
+          "📎 <strong>Dry cleaning tags go on the hanger, not the sleeve</strong>\nKeep those paper sleeves off your garments. We return items pressed and ready—hang them, store them, wear them." +
+            TIP_DISCLAIMER,
+          "💨 <strong>Use a steamer, not an iron</strong>\nSteaming is gentler on delicate fabrics and helps preserve the finish. Perfect for touch-ups between professional cleanings." +
+            TIP_DISCLAIMER,
+          "👔 <strong>Mind your collars and cuffs</strong>\nThese spots collect oils, makeup, and sweat. If you want your shirts to last longer, pre-treat them or clean them more often." +
+            TIP_DISCLAIMER,
+          "🪵 <strong>Skip the wire hangers</strong>\nInvest in wooden or padded hangers. Wire hangers can misshape shoulders and leave rust or stretch marks." +
+            TIP_DISCLAIMER,
+          "🌱 <strong>Eco-cleaning matters—ask your cleaner</strong>\nAt Dublin Cleaners, we use biodegradable solvents that are gentle on fabrics and the planet. Garment care without the guilt." +
+            TIP_DISCLAIMER,
+        ];
+
+        /* ----- DOM refs ----- */
+        const startScreen = document.getElementById("startScreen");
+        const gameArea = document.getElementById("gameArea");
+        const timerEl = document.getElementById("timer");
+        const cannon = document.getElementById("cannon");
+        const resultScreen = document.getElementById("resultScreen");
+        const resultText = document.getElementById("resultText");
+        const qrWrap = document.getElementById("qrWrap");
+        const logo = document.getElementById("logo");
+        const playBtn = document.getElementById("playBtn");
+        let remaining,
+          total,
+          seconds,
+          countdown,
+          startTime,
+          fireInterval,
+          bubbleTimer,
+          resultShown = false;
+
+        function randomImage() {
+          return STAIN_IMAGES[Math.floor(Math.random() * STAIN_IMAGES.length)];
+        }
+
+        function randomLine() {
+          return BUBBLE_LINES[Math.floor(Math.random() * BUBBLE_LINES.length)];
+        }
+
+        function spawnBubble() {
+          if (startScreen.classList.contains("hidden")) return;
+          if (startScreen.querySelectorAll(".bubble").length >= 3) return;
+          const bubble = document.createElement("div");
+          bubble.className =
+            "bubble max-w-[220px] px-4 py-2 rounded-2xl border-2 border-emerald-600 bg-white text-emerald-700 font-bold text-center shadow-md pointer-events-none";
+          bubble.innerHTML = `${randomLine()}<svg class="absolute -top-2 -right-2 w-4 h-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 0l2.09 6.26L18.18 7.5l-5.09 3.7L14.18 18 10 14.27 5.82 18l1.09-6.8L1.82 7.5l6.09-1.24L10 0z"/></svg>`;
+          startScreen.appendChild(bubble);
+          const rect = startScreen.getBoundingClientRect();
+          const maxY = rect.height * 0.6;
+          const avoid = [
+            logo.getBoundingClientRect(),
+            playBtn.getBoundingClientRect(),
+          ];
+          const bw = bubble.offsetWidth;
+          const bh = bubble.offsetHeight;
+          let x,
+            y,
+            tries = 0,
+            ok;
+          do {
+            x = Math.random() * (rect.width - bw);
+            y = Math.random() * (maxY - bh);
+            ok = !avoid.some((r) => {
+              const rx = r.left - rect.left;
+              const ry = r.top - rect.top;
+              return !(
+                x + bw < rx ||
+                x > rx + r.width ||
+                y + bh < ry ||
+                y > ry + r.height
+              );
+            });
+            tries++;
+          } while (!ok && tries < 10);
+          bubble.style.left = x + "px";
+          bubble.style.top = y + "px";
+          bubble.style.animation =
+            "bubble-in 0.6s ease-out, bubble-out 0.6s ease-in 4.4s forwards";
+          setTimeout(() => bubble.remove(), BUBBLE_DURATION);
+        }
+
+        function scheduleBubble() {
+          if (startScreen.classList.contains("hidden")) return;
+          bubbleTimer = setTimeout(
+            () => {
+              spawnBubble();
+              scheduleBubble();
+            },
+            BUBBLE_INTERVAL + (Math.random() * 2 - 1) * BUBBLE_JITTER,
+          );
+        }
+
+        function spawnStain(x, y) {
+          const s = document.createElement("img");
+          s.src = randomImage();
+          s.className = "stain";
+          const rect = gameArea.getBoundingClientRect();
+          const spawnW = rect.width - STAIN_SIZE;
+          const spawnH = rect.height - STAIN_SIZE - TOP_MARGIN - BOTTOM_MARGIN;
+          if (x === undefined) {
+            x = Math.random() * spawnW;
+          }
+          if (y === undefined) {
+            y = Math.random() * spawnH + TOP_MARGIN;
+          }
+          s.style.left = x + "px";
+          s.style.top = y + "px";
+          s.style.width = STAIN_SIZE + "px";
+          s.style.height = STAIN_SIZE + "px";
+          s.style.transform = `rotate(${Math.random() * 360}deg)`;
+          const remove = () => {
+            s.remove();
+            remaining--;
+            if (remaining === 0 && seconds > 0) win();
+          };
+          if (IS_MOBILE) {
+            s.addEventListener("touchstart", remove, { passive: true });
+          } else {
+            s.addEventListener("pointerdown", remove);
+          }
+          gameArea.appendChild(s);
+          remaining++;
+          total++;
+          return s;
+        }
+
+        function animateProjectile(el, x0, y0, x1, y1) {
+          const duration = 800;
+          const arc = 150;
+          const start = performance.now();
+          function frame(now) {
+            const t = Math.min((now - start) / duration, 1);
+            const x = x0 + (x1 - x0) * t;
+            const y = y0 + (y1 - y0) * t - arc * Math.sin(Math.PI * t);
+            el.style.left = x + "px";
+            el.style.top = y + "px";
+            if (t < 1) {
+              requestAnimationFrame(frame);
+            } else {
+              el.style.left = x1 + "px";
+              el.style.top = y1 + "px";
+            }
+          }
+          requestAnimationFrame(frame);
+        }
+
+        function fireCannon() {
+          const rect = cannon.getBoundingClientRect();
+          const area = gameArea.getBoundingClientRect();
+          const mouthX = rect.left + rect.width * 0.15 - area.left;
+          const mouthY = rect.top + rect.height * 0.15 - area.top;
+          const targetX = Math.random() * (area.width - STAIN_SIZE);
+          const targetY =
+            Math.random() *
+              (area.height - STAIN_SIZE - TOP_MARGIN - BOTTOM_MARGIN) +
+            TOP_MARGIN;
+          const angle = Math.atan2(targetY - mouthY, targetX - mouthX);
+          cannon.style.transform = `rotate(${angle}rad)`;
+          const offset = 30;
+          const startX = mouthX + Math.cos(angle) * offset;
+          const startY = mouthY + Math.sin(angle) * offset;
+          const s = spawnStain(startX, startY);
+          animateProjectile(s, startX, startY, targetX, targetY);
+        }
+
+        function startRound() {
+          if (typeof google !== "undefined") {
+            google.script.run
+              .withSuccessHandler((s) => {
+                winStreak = s;
+                begin();
+              })
+              .refreshStreakTimer();
+          } else {
+            begin();
+          }
+        }
+
+        function begin() {
+          applyDifficulty();
+          startScreen.classList.add("hidden");
+          clearTimeout(bubbleTimer);
+          startScreen.querySelectorAll(".bubble").forEach((b) => b.remove());
+          gameArea.classList.remove("hidden");
+          gameArea.querySelectorAll(".stain").forEach((s) => s.remove());
+          if (!gameArea.contains(timerEl)) gameArea.appendChild(timerEl);
+          remaining = 0;
+          total = 0;
+          resultShown = false;
+          for (let i = 0; i < STAIN_START; i++) spawnStain();
+          seconds = GAME_TIME;
+          timerEl.textContent = seconds;
+          startTime = now();
+          countdown = setInterval(() => {
+            seconds--;
+            timerEl.textContent = seconds;
+            if (seconds <= 0) {
+              clearInterval(countdown);
+              clearInterval(fireInterval);
+              lose();
+            }
+          }, 1000);
+          fireInterval = setInterval(fireCannon, FIRE_RATE);
+          if (IS_MOBILE) setTimeout(fireCannon, FIRE_RATE / 2);
+        }
+
+        function win() {
+          clearInterval(countdown);
+          clearInterval(fireInterval);
+          // Double-check no stain elements remain before allowing a win
+          const stainsLeft = gameArea.querySelectorAll(".stain").length;
+          showResult(stainsLeft === 0);
+        }
+
+        function lose() {
+          showResult(false);
+        }
+
+        function showResult(success) {
+          if (resultShown) return;
+          resultShown = true;
+          gameArea.classList.add("hidden");
+          resultScreen.classList.remove("hidden");
+          qrWrap.innerHTML = "";
+          qrWrap.className = "p-4 bg-stone-100 rounded-2xl shadow-inner";
+          resultText.textContent = "";
+          const payload = {
+            score: total - remaining,
+            missed: remaining,
+            duration: (now() - startTime) / 1000,
+            device: DEVICE,
+          };
+          const tip =
+            cleaningTips[Math.floor(Math.random() * cleaningTips.length)];
+          if (success) {
+            payload.missed = 0;
+            payload.score = total;
+            resultText.textContent = "Great job! Enjoy this cleaning tip 🌱";
+            qrWrap.className =
+              "p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg";
+            const tipDiv = document.createElement("div");
+            tipDiv.className = "text-xl text-stone-700 whitespace-pre-line";
+            tipDiv.innerHTML = tip;
+            qrWrap.appendChild(tipDiv);
+            confetti();
+            if (typeof google !== "undefined") {
+              google.script.run
+                .withFailureHandler(() => {})
+                .logGame(JSON.stringify(payload));
+              google.script.run
+                .withSuccessHandler((r) => {
+                  winStreak = r.winStreak;
+                })
+                .handleWin();
+            } else {
+              winStreak = 0;
+            }
+          } else {
+            resultText.textContent =
+              "Thanks for playing! Tap Play Again to try again.";
+            qrWrap.className =
+              "p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg";
+            const tipDiv = document.createElement("div");
+            tipDiv.className = "text-xl text-stone-700 whitespace-pre-line";
+            tipDiv.innerHTML = tip;
+            qrWrap.appendChild(tipDiv);
+            if (typeof google !== "undefined") {
+              google.script.run
+                .withFailureHandler(() => {})
+                .logGame(JSON.stringify(payload));
+            }
+            winStreak = 0;
+          }
+        }
+
+        function confetti() {
+          if (window.confetti) {
+            window.confetti({
+              particleCount: 160,
+              spread: 90,
+              origin: { y: 0.6 },
+              zIndex: 1,
+            });
+          }
+        }
+
+        function reset() {
+          resultScreen.classList.add("hidden");
+          startScreen.classList.remove("hidden");
+          resultShown = false;
+          scheduleBubble();
+        }
+
+        playBtn.addEventListener("click", () => {
+          startRound();
+        });
+        document.getElementById("restartBtn").addEventListener("click", () => {
+          resultScreen.classList.add("hidden");
+          startRound();
+        });
+
+        scheduleBubble();
+
+        setInterval(() => {
+          if (
+            !resultScreen.classList.contains("hidden") &&
+            now() - startTime > (GAME_TIME + 30) * 1000
+          ) {
+            reset();
+          }
+        }, 5000);
+      })();
+    </script>
+  </body>
 </html>
