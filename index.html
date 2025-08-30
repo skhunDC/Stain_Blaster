@@ -646,7 +646,19 @@
             winStreak = 0;
           }
           if (checkHighScore(payload.score)) {
-            resultText.textContent += " New Su-Stained High Score!";
+            const hsWrap = document.createElement("div");
+            hsWrap.className = "relative inline-block";
+            const staticEl = document.createElement("div");
+            staticEl.className =
+              "text-6xl font-extrabold text-rose-500 text-center drop-shadow-lg";
+            staticEl.textContent = "New Su-Stained High Score!";
+            const flashEl = document.createElement("div");
+            flashEl.className =
+              "text-6xl font-extrabold text-rose-500 flash text-center drop-shadow-lg absolute inset-0";
+            flashEl.textContent = "New Su-Stained High Score!";
+            hsWrap.appendChild(staticEl);
+            hsWrap.appendChild(flashEl);
+            qrWrap.prepend(hsWrap);
           }
           clearTimeout(resetTimer);
           resetTimer = setTimeout(() => {
