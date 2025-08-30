@@ -7,7 +7,7 @@
     "format": "prettier -w .",
     "lint": "eslint .",
     "build": "vite build",
-    "test": "echo \"no tests\""
+    "test": "node --test"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
