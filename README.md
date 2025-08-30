@@ -1,6 +1,6 @@
 # Stain Blaster Kiosk Game
 
-An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to reveal a quick cleaning tip. The same build now scales down for phones, keeping the cannon visible and shrinking stains for added challenge.
+An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to reveal a quick cleaning tip and win prizes for discounts off your dry cleaning bill. The same build now scales down for phones, keeping the cannon visible and shrinking stains for added challenge.
 
 ## Kiosk/Iframe Build
 
