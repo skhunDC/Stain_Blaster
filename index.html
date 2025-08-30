@@ -312,7 +312,8 @@
 <div class="font-bold">High Score: ${score}</div>
 <div>${new Date(timestamp).toLocaleString()}</div>`;
           } else {
-            highScoreEl.innerHTML = '<div class="font-bold">High Score: 0</div>';
+            highScoreEl.innerHTML =
+              '<div class="font-bold">High Score: 0</div>';
           }
         }
 
@@ -580,8 +581,8 @@
             qrWrap.appendChild(tipDiv);
             const shareEl = document.createElement("div");
             shareEl.className = "text-sm text-stone-600 text-center";
-            shareEl.textContent =
-              "Post your winnings to social to share with your friends. Tag us @dublincleaners on Facebook and/or Instagram.";
+            shareEl.innerHTML =
+              'Share with your friends your Winnings & Hight Scores to social. Tag us @dublincleaners on Facebook and/or Instagram.<span class="inline-flex items-center gap-1 ml-1"><img src="https://cdn.simpleicons.org/facebook/1877F2" alt="Facebook logo" class="h-4 w-4" /><img src="https://cdn.simpleicons.org/instagram/E4405F" alt="Instagram logo" class="h-4 w-4" /></span>';
             qrWrap.appendChild(shareEl);
             confetti();
             if (typeof google !== "undefined") {
