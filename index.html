@@ -169,6 +169,14 @@
         let FIRE_RATE = BASE_FIRE_RATE;
         let winStreak = 0;
         let timeOffset = 0; // server vs client clock diff
+        let highScore = Number(localStorage.getItem("highScore") || 0);
+
+        const highScoreMsg = document.createElement("div");
+        highScoreMsg.id = "highScoreMsg";
+        highScoreMsg.className =
+          "hidden fixed bottom-4 right-4 bg-emerald-600 text-white text-lg px-4 py-2 rounded-2xl shadow-lg z-50";
+        highScoreMsg.textContent = "You beat the high score! You are the BEST!!";
+        document.body.appendChild(highScoreMsg);
 
         if (typeof google !== "undefined") {
           google.script.run
@@ -465,6 +473,7 @@
         }
 
         function begin() {
+          highScoreMsg.classList.add("hidden");
           applyDifficulty();
           startScreen.classList.add("hidden");
           clearTimeout(bubbleTimer);
@@ -580,6 +589,11 @@
             } else {
               winStreak = 0;
             }
+            if (payload.score > highScore) {
+              highScore = payload.score;
+              localStorage.setItem("highScore", highScore);
+              showHighScoreBanner();
+            }
           } else {
             resultText.textContent =
               "Thanks for playing! Tap Play Again to try again.";
@@ -610,6 +624,13 @@
               zIndex: 1,
             });
           }
+        }
+
+        function showHighScoreBanner() {
+          highScoreMsg.classList.remove("hidden");
+          setTimeout(() => {
+            highScoreMsg.classList.add("hidden");
+          }, 5000);
         }
 
         function reset() {
