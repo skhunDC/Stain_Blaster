@@ -437,15 +437,14 @@
         }
 
         function startRound() {
+          begin();
           if (typeof google !== "undefined") {
             google.script.run
               .withSuccessHandler((s) => {
                 winStreak = s;
-                begin();
               })
+              .withFailureHandler(() => {})
               .refreshStreakTimer();
-          } else {
-            begin();
           }
         }
 
