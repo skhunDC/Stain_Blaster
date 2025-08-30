@@ -499,12 +499,14 @@
               "p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg";
             if (prize.tier !== "Common") {
               const prizeEl = document.createElement("div");
-              prizeEl.className = "text-2xl text-emerald-700 font-bold text-center";
+              prizeEl.className =
+                "text-2xl text-emerald-700 font-bold text-center";
               prizeEl.textContent = prize.reward;
               qrWrap.appendChild(prizeEl);
               const noteEl = document.createElement("div");
               noteEl.className = "text-sm text-stone-600 text-center";
-              noteEl.textContent = "Take a Photo of Credit & Show to CSR for Credit";
+              noteEl.textContent =
+                "Take a Photo of Credit & Show to CSR for Credit";
               qrWrap.appendChild(noteEl);
               if (prize.tier === "Epic") {
                 const capEl = document.createElement("div");
@@ -518,6 +520,11 @@
               codeEl.className = "font-mono text-lg text-center";
               codeEl.textContent = `Code: ${code}`;
               qrWrap.appendChild(codeEl);
+              const disclaimerEl = document.createElement("div");
+              disclaimerEl.className = "text-xs text-stone-500 text-center";
+              disclaimerEl.innerHTML =
+                "Coupon cannot be combined with any other coupons or offers. Limit one coupon per visit per customer. No cash value. Valid only at participating locations. Other restrictions may apply.";
+              qrWrap.appendChild(disclaimerEl);
             }
             const tipDiv = document.createElement("div");
             tipDiv.className = "text-xl text-stone-700 whitespace-pre-line";
