@@ -175,7 +175,8 @@
         highScoreMsg.id = "highScoreMsg";
         highScoreMsg.className =
           "hidden fixed bottom-4 right-4 bg-emerald-600 text-white text-lg px-4 py-2 rounded-2xl shadow-lg z-50";
-        highScoreMsg.textContent = "You beat the high score! You are the BEST!!";
+        highScoreMsg.textContent =
+          "You beat the high score! You are the BEST!!";
         document.body.appendChild(highScoreMsg);
 
         if (typeof google !== "undefined") {
@@ -315,7 +316,7 @@
         function updateHighScoreDisplay() {
           const el = document.getElementById("highScoreDisplay");
           if (!el) return;
-          let html = "<div class=\"text-lg font-semibold\">High Score</div>";
+          let html = '<div class="text-lg font-semibold">High Score</div>';
           html += `<div class="text-4xl font-bold">${highScore}</div>`;
           if (highScoreDate) {
             html += `<div class="text-xs text-stone-500">${highScoreDate}</div>`;
@@ -576,6 +577,11 @@
             tipDiv.className = "text-xl text-stone-700 whitespace-pre-line";
             tipDiv.innerHTML = tip;
             qrWrap.appendChild(tipDiv);
+            const shareEl = document.createElement("div");
+            shareEl.className = "text-sm text-stone-600 text-center";
+            shareEl.textContent =
+              "Post your winnings & high scores to social to share with your friends. Tag us @dublincleaners on Facebook and/or Instagram.";
+            qrWrap.appendChild(shareEl);
             confetti();
             if (typeof google !== "undefined") {
               google.script.run
