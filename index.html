@@ -66,6 +66,19 @@
           opacity: 0;
         }
       }
+
+      @keyframes flash {
+        0%, 50%, 100% {
+          opacity: 1;
+        }
+        25%, 75% {
+          opacity: 0;
+        }
+      }
+
+      .flash {
+        animation: flash 1s infinite;
+      }
     </style>
   </head>
   <body class="h-full bg-white overflow-hidden">
@@ -555,7 +568,7 @@
             if (prize.tier !== "Common") {
               const prizeEl = document.createElement("div");
               prizeEl.className =
-                "text-2xl text-emerald-700 font-bold text-center";
+                "text-5xl font-extrabold text-yellow-400 flash text-center drop-shadow-lg";
               prizeEl.textContent = prize.reward;
               qrWrap.appendChild(prizeEl);
               const noteEl = document.createElement("div");
