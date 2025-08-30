@@ -84,7 +84,8 @@
         Stain Blaster
       </div>
       <div class="text-xl text-stone-500 text-center">
-        Swipe the stains away in 12 seconds<br />for cleaning tips and prizes for discounts off your dry cleaning bill!
+        Swipe the stains away in 12 seconds<br />for cleaning tips and prizes
+        for discounts off your dry cleaning bill!
       </div>
       <div class="text-xs text-stone-400 text-center max-w-md px-4">
         By pressing "Play Now," you agree to our disclaimer: Ensure safe for
@@ -142,14 +143,47 @@
 
     <script>
       (async () => {
-        let pickPrize = () => ({
-          tier: "Common",
-          reward: null,
-          minLevel: 1,
-        });
+        // Fallback prize picker in case the module fails to load. This
+        // mirrors the logic in prize.js so kiosk users still receive
+        // monetary rewards even if dynamic import is blocked.
+        let pickPrize = (level) => {
+          const prizes = [
+            { tier: "Common", probability: 0.6, reward: null, minLevel: 1 },
+            {
+              tier: "Uncommon",
+              probability: 0.25,
+              reward: "$5 cleaning credit",
+              minLevel: 1,
+            },
+            {
+              tier: "Rare",
+              probability: 0.12,
+              reward: "$10 cleaning credit",
+              minLevel: 2,
+            },
+            {
+              tier: "Epic",
+              probability: 0.03,
+              reward: "$50 premium garment credit",
+              minLevel: 3,
+            },
+          ];
+          const fallback = prizes.find((p) => level >= p.minLevel) || prizes[0];
+          const r = Math.random();
+          let cumulative = 0;
+          for (const p of prizes) {
+            cumulative += p.probability;
+            if (r < cumulative) {
+              return level >= p.minLevel ? p : fallback;
+            }
+          }
+          return fallback;
+        };
         try {
           ({ pickPrize } = await import("./prize.js"));
-        } catch {}
+        } catch (err) {
+          console.error("Failed to load prize module", err);
+        }
         /* ----- Config ----- */
 
         const BASE_STAIN_START = 23; // initial stains
