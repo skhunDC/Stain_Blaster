@@ -145,6 +145,11 @@
       </button>
     </div>
 
+    <div
+      id="highScore"
+      class="hidden absolute bottom-2 right-2 z-50 text-xs text-stone-700 text-right"
+    ></div>
+
     <script>
       (() => {
         /* ----- Config ----- */
@@ -271,6 +276,7 @@
         const qrWrap = document.getElementById("qrWrap");
         const logo = document.getElementById("logo");
         const playBtn = document.getElementById("playBtn");
+        const highScoreEl = document.getElementById("highScore");
         let remaining,
           total,
           seconds,
@@ -279,6 +285,46 @@
           fireInterval,
           bubbleTimer,
           resultShown = false;
+
+        function loadHighScore() {
+          try {
+            return (
+              JSON.parse(localStorage.getItem("sbHighScore") || "null") || {
+                score: 0,
+                timestamp: 0,
+              }
+            );
+          } catch {
+            return { score: 0, timestamp: 0 };
+          }
+        }
+
+        function saveHighScore(score) {
+          const data = { score, timestamp: Date.now() };
+          localStorage.setItem("sbHighScore", JSON.stringify(data));
+          return data;
+        }
+
+        function updateHighScoreDisplay() {
+          const { score, timestamp } = loadHighScore();
+          if (score > 0) {
+            highScoreEl.textContent = `High Score: ${score} (${new Date(
+              timestamp,
+            ).toLocaleString()})`;
+          } else {
+            highScoreEl.textContent = "High Score: 0";
+          }
+        }
+
+        function checkHighScore(score) {
+          const { score: prev } = loadHighScore();
+          if (score > prev) {
+            saveHighScore(score);
+            updateHighScoreDisplay();
+            return true;
+          }
+          return false;
+        }
 
         function randomImage() {
           return STAIN_IMAGES[Math.floor(Math.random() * STAIN_IMAGES.length)];
@@ -438,6 +484,8 @@
           remaining = 0;
           total = 0;
           resultShown = false;
+          updateHighScoreDisplay();
+          highScoreEl.classList.remove("hidden");
           for (let i = 0; i < STAIN_START; i++) spawnStain();
           seconds = GAME_TIME;
           timerEl.textContent = seconds;
@@ -564,6 +612,9 @@
             }
             winStreak = 0;
           }
+          if (checkHighScore(payload.score)) {
+            resultText.textContent += " New High Score!";
+          }
         }
 
         function confetti() {
@@ -581,6 +632,7 @@
           resultScreen.classList.add("hidden");
           startScreen.classList.remove("hidden");
           resultShown = false;
+          highScoreEl.classList.add("hidden");
           scheduleBubble();
         }
 
