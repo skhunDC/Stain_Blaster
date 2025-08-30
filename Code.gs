@@ -94,3 +94,13 @@ function handleWin() {
   props.setProperty("winStreak", idx);
   return { winStreak: idx };
 }
+
+/**
+ * Reset the win streak after a loss so future games start at base difficulty.
+ * Returns zero for convenience so the client can update its local state.
+ */
+function resetStreak() {
+  const props = PropertiesService.getUserProperties();
+  props.deleteProperty("winStreak");
+  return { winStreak: 0 };
+}
