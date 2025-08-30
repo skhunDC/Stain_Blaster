@@ -231,7 +231,16 @@
         ];
 
         function genCode() {
-          return `DC-${Date.now().toString(36).toUpperCase()}`;
+          const now = new Date();
+          const stamp =
+            now.getFullYear().toString() +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            String(now.getDate()).padStart(2, "0") +
+            String(now.getHours()).padStart(2, "0") +
+            String(now.getMinutes()).padStart(2, "0") +
+            String(now.getSeconds()).padStart(2, "0");
+          const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
+          return `${stamp}-${rand}`;
         }
 
         /* ----- DOM refs ----- */
@@ -518,7 +527,7 @@
               const noteEl = document.createElement("div");
               noteEl.className = "text-sm text-stone-600 text-center";
               noteEl.textContent =
-                "Take a Photo of Credit & Show to CSR for Credit";
+                "Take a Photo of Credit & Show to CSR & also brag on social media about your win.";
               qrWrap.appendChild(noteEl);
               if (prize.tier === "Epic") {
                 const capEl = document.createElement("div");
@@ -526,6 +535,11 @@
                 capEl.textContent = "1/day cap, manager approval";
                 qrWrap.appendChild(capEl);
               }
+              const shareEl = document.createElement("div");
+              shareEl.className = "text-sm text-stone-600 text-center";
+              shareEl.innerHTML =
+                'Share with your friends your Winnings & Hight Scores to social. Tag us @dublincleaners on Facebook and/or Instagram.<span class="inline-flex items-center gap-1 ml-1"><img src="https://cdn.simpleicons.org/facebook/1877F2" alt="Facebook logo" class="h-4 w-4" /><img src="https://cdn.simpleicons.org/instagram/E4405F" alt="Instagram logo" class="h-4 w-4" /></span>';
+              qrWrap.appendChild(shareEl);
               code = genCode();
               payload.prizeCode = code;
               const codeEl = document.createElement("div");
@@ -542,11 +556,6 @@
             tipDiv.className = "text-xl text-stone-700 whitespace-pre-line";
             tipDiv.innerHTML = tip;
             qrWrap.appendChild(tipDiv);
-            const shareEl = document.createElement("div");
-            shareEl.className = "text-sm text-stone-600 text-center";
-            shareEl.innerHTML =
-              'Share with your friends your Winnings & Hight Scores to social. Tag us @dublincleaners on Facebook and/or Instagram.<span class="inline-flex items-center gap-1 ml-1"><img src="https://cdn.simpleicons.org/facebook/1877F2" alt="Facebook logo" class="h-4 w-4" /><img src="https://cdn.simpleicons.org/instagram/E4405F" alt="Instagram logo" class="h-4 w-4" /></span>';
-            qrWrap.appendChild(shareEl);
             confetti();
             if (typeof google !== "undefined") {
               google.script.run
