@@ -147,7 +147,7 @@
 
     <div
       id="highScore"
-      class="hidden absolute bottom-2 right-2 z-50 text-2xl font-bold text-white bg-emerald-600 px-4 py-2 rounded-lg shadow-lg text-right"
+      class="hidden absolute bottom-2 right-2 z-50 text-[1.2rem] text-white bg-emerald-600 px-4 py-2 rounded-lg shadow-lg text-right"
     ></div>
 
     <script>
@@ -308,11 +308,11 @@
         function updateHighScoreDisplay() {
           const { score, timestamp } = loadHighScore();
           if (score > 0) {
-            highScoreEl.textContent = `High Score: ${score} (${new Date(
-              timestamp,
-            ).toLocaleString()})`;
+            highScoreEl.innerHTML = `
+<div class="font-bold">High Score: ${score}</div>
+<div>${new Date(timestamp).toLocaleString()}</div>`;
           } else {
-            highScoreEl.textContent = "High Score: 0";
+            highScoreEl.innerHTML = '<div class="font-bold">High Score: 0</div>';
           }
         }
 
