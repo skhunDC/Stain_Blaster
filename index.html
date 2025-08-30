@@ -264,11 +264,11 @@
           const { score, timestamp } = loadHighScore();
           if (score > 0) {
             highScoreEl.innerHTML = `
-<div class="font-bold">Su-Stained High Score: ${score}</div>
+<div class="font-bold">High Score: ${score}</div>
 <div>${new Date(timestamp).toLocaleString()}</div>`;
           } else {
             highScoreEl.innerHTML =
-              '<div class="font-bold">Su-Stained High Score: 0</div>';
+              '<div class="font-bold">High Score: 0</div>';
           }
         }
 
@@ -563,7 +563,7 @@
             winStreak = 0;
           }
           if (checkHighScore(payload.score)) {
-            resultText.textContent += " New Su-Stained High Score!";
+            resultText.textContent += " New High Score!";
           }
         }
 
