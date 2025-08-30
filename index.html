@@ -565,11 +565,19 @@
             qrWrap.className =
               "p-6 bg-emerald-50 rounded-2xl shadow-md flex flex-col items-center gap-4 max-w-lg";
             if (prize.tier !== "Common") {
-              const prizeEl = document.createElement("div");
-              prizeEl.className =
-                "text-5xl font-extrabold text-yellow-400 flash text-center drop-shadow-lg";
-              prizeEl.textContent = prize.reward;
-              qrWrap.appendChild(prizeEl);
+              const prizeWrap = document.createElement("div");
+              prizeWrap.className = "relative inline-block";
+              const staticEl = document.createElement("div");
+              staticEl.className =
+                "text-5xl font-extrabold text-yellow-400 text-center drop-shadow-lg";
+              staticEl.textContent = prize.reward;
+              const flashEl = document.createElement("div");
+              flashEl.className =
+                "text-5xl font-extrabold text-yellow-400 flash text-center drop-shadow-lg absolute inset-0";
+              flashEl.textContent = prize.reward;
+              prizeWrap.appendChild(staticEl);
+              prizeWrap.appendChild(flashEl);
+              qrWrap.appendChild(prizeWrap);
               const noteEl = document.createElement("div");
               noteEl.className = "text-sm text-stone-600 text-center";
               noteEl.textContent =
