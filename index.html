@@ -200,7 +200,7 @@
           "Spotless skills? Earn dry-cleaning credits!",
           "Tap ▶ to blast, learn & save!",
           "Your dry-cleaner believes in you 😎",
-          "Beat the High Score!!",
+          "Beat the Su-Stained High Score!!",
         ];
         const BUBBLE_INTERVAL = 4000; // ms between spawns
         const BUBBLE_JITTER = 1000; // ms random jitter
@@ -286,11 +286,11 @@
           const { score, timestamp } = loadHighScore();
           if (score > 0) {
             highScoreEl.innerHTML = `
-<div class="font-bold">High Score: ${score}</div>
+<div class="font-bold">Su-Stained High Score: ${score}</div>
 <div>${new Date(timestamp).toLocaleString()}</div>`;
           } else {
             highScoreEl.innerHTML =
-              '<div class="font-bold">High Score: 0</div>';
+              '<div class="font-bold">Su-Stained High Score: 0</div>';
           }
         }
 
@@ -592,7 +592,7 @@
             winStreak = 0;
           }
           if (checkHighScore(payload.score)) {
-            resultText.textContent += " New High Score!";
+            resultText.textContent += " New Su-Stained High Score!";
           }
           clearTimeout(resetTimer);
           resetTimer = setTimeout(() => {
