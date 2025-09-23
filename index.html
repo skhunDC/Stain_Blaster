@@ -24,8 +24,31 @@
         z-index: 50;
       }
       #logo {
+        position: relative;
+        display: inline-block;
         transform-origin: center;
+      }
+      #logo .logo-main {
+        display: block;
+        width: 100%;
+        height: auto;
         filter: drop-shadow(0 18px 38px rgba(16, 185, 129, 0.35));
+      }
+      #logo .logo-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        pointer-events: none;
+        mix-blend-mode: screen;
+      }
+      #logo .logo-layer--red {
+        filter: hue-rotate(-45deg) saturate(260%) brightness(1.2);
+      }
+      #logo .logo-layer--cyan {
+        filter: hue-rotate(160deg) saturate(240%) brightness(1.2);
       }
 
       .bubble {
@@ -107,25 +130,128 @@
         animation: flash 1s infinite;
       }
 
-      .logo-spiral {
-        animation: logo-spiral 2.4s ease-in-out;
+      .logo-glitch .logo-main {
+        animation: logo-glitch-base 1.1s steps(2, end);
+      }
+      .logo-glitch .logo-layer--red {
+        animation: logo-glitch-layer-red 1.1s steps(2, end);
+      }
+      .logo-glitch .logo-layer--cyan {
+        animation: logo-glitch-layer-cyan 1.1s steps(2, end);
       }
 
-      @keyframes logo-spiral {
-        0% {
-          transform: scale(1) rotate(0deg);
-        }
-        30% {
-          transform: scale(1.12) rotate(200deg);
-        }
-        55% {
-          transform: scale(1.2) rotate(410deg);
-        }
-        75% {
-          transform: scale(1.08) rotate(540deg);
-        }
+      @keyframes logo-glitch-base {
+        0%,
+        12%,
+        20%,
+        55%,
+        65%,
+        82%,
+        90%,
         100% {
-          transform: scale(1) rotate(720deg);
+          transform: translate3d(0, 0, 0);
+        }
+        13% {
+          transform: translate3d(-2px, 1px, 0) skewX(-2deg);
+        }
+        15% {
+          transform: translate3d(3px, -2px, 0) skewX(2deg);
+        }
+        18% {
+          transform: translate3d(-1px, 1px, 0);
+        }
+        56% {
+          transform: translate3d(2px, -1px, 0) skewX(1deg);
+        }
+        60% {
+          transform: translate3d(-2px, 2px, 0) skewX(-1deg);
+        }
+        83% {
+          transform: translate3d(-1px, -2px, 0);
+        }
+        86% {
+          transform: translate3d(2px, 1px, 0);
+        }
+      }
+
+      @keyframes logo-glitch-layer-red {
+        0%,
+        12%,
+        20%,
+        55%,
+        63%,
+        82%,
+        86%,
+        100% {
+          opacity: 0;
+          transform: translate3d(0, 0, 0);
+          clip-path: inset(0 0 0 0);
+        }
+        13% {
+          opacity: 0.7;
+          transform: translate3d(-3px, -2px, 0);
+          clip-path: inset(0 0 55% 0);
+        }
+        15% {
+          opacity: 0.7;
+          transform: translate3d(3px, 1px, 0);
+          clip-path: inset(45% 0 0 0);
+        }
+        18% {
+          opacity: 0;
+        }
+        56% {
+          opacity: 0.6;
+          transform: translate3d(-2px, 1px, 0);
+          clip-path: inset(0 0 65% 0);
+        }
+        60% {
+          opacity: 0.6;
+          transform: translate3d(2px, -1px, 0);
+          clip-path: inset(35% 0 0 0);
+        }
+        83% {
+          opacity: 0.75;
+          transform: translate3d(-3px, 0, 0);
+          clip-path: inset(15% 0 45% 0);
+        }
+      }
+
+      @keyframes logo-glitch-layer-cyan {
+        0%,
+        12%,
+        20%,
+        55%,
+        60%,
+        80%,
+        87%,
+        100% {
+          opacity: 0;
+          transform: translate3d(0, 0, 0);
+          clip-path: inset(0 0 0 0);
+        }
+        13% {
+          opacity: 0.7;
+          transform: translate3d(3px, 1px, 0);
+          clip-path: inset(45% 0 0 0);
+        }
+        15% {
+          opacity: 0.7;
+          transform: translate3d(-2px, -1px, 0);
+          clip-path: inset(0 0 40% 0);
+        }
+        18% {
+          opacity: 0;
+        }
+        57% {
+          opacity: 0.6;
+          transform: translate3d(2px, -2px, 0);
+          clip-path: inset(20% 0 40% 0);
+        }
+        84% {
+          opacity: 0.7;
+          transform: translate3d(2px, 2px, 0);
+          clip-path: inset(60% 0 0 0);
         }
       }
     </style>
@@ -136,12 +262,28 @@
       id="startScreen"
       class="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-white touch-none select-none"
     >
-      <img
+      <div
         id="logo"
-        src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
-        alt="Dublin Cleaners"
-        class="w-72 md:w-80 max-w-sm drop-shadow-2xl transition-transform duration-700 ease-out"
-      />
+        class="relative w-72 md:w-80 max-w-sm drop-shadow-2xl transition-transform duration-700 ease-out"
+      >
+        <img
+          src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
+          alt="Dublin Cleaners"
+          class="logo-main"
+        />
+        <img
+          src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
+          alt=""
+          aria-hidden="true"
+          class="logo-layer logo-layer--red"
+        />
+        <img
+          src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
+          alt=""
+          aria-hidden="true"
+          class="logo-layer logo-layer--cyan"
+        />
+      </div>
       <div class="text-5xl font-bold text-stone-700 text-center leading-tight">
         Stain Blaster
       </div>
@@ -304,9 +446,9 @@
         const BUBBLE_INTERVAL = 4000; // ms between spawns
         const BUBBLE_JITTER = 1000; // ms random jitter
         const BUBBLE_DURATION = 5000; // ms visible
-        const LOGO_SPIRAL_INTERVAL = 14000; // ms between spiral triggers
-        const LOGO_SPIRAL_JITTER = 5000; // ms random offset
-        const LOGO_SPIRAL_DURATION = 2400; // ms animation length
+        const LOGO_GLITCH_INTERVAL = 14000; // ms between glitch triggers
+        const LOGO_GLITCH_JITTER = 5000; // ms random offset
+        const LOGO_GLITCH_DURATION = 1100; // ms animation length
         const TIP_DISCLAIMER =
           "\n\n<em>Ensure safe for care labels and understand restrictions. ATTEMPT AT YOUR OWN RISK – we are not responsible for any damage you cause to your garment.</em>";
         const cleaningTips = [
@@ -364,7 +506,7 @@
           fireInterval,
           bubbleTimer,
           logoTimer,
-          logoSpiralCleanup,
+          logoGlitchCleanup,
           resultShown = false;
 
         let inMemoryHighScore = { score: 0, timestamp: 0 };
@@ -472,27 +614,27 @@
           );
         }
 
-        function triggerLogoSpiral() {
+        function triggerLogoGlitch() {
           if (!logo) return;
-          logo.classList.remove("logo-spiral");
+          logo.classList.remove("logo-glitch");
           // Force reflow so the animation can restart even if the class is present.
           void logo.offsetWidth;
-          logo.classList.add("logo-spiral");
-          clearTimeout(logoSpiralCleanup);
-          logoSpiralCleanup = setTimeout(() => {
-            logo.classList.remove("logo-spiral");
-          }, LOGO_SPIRAL_DURATION);
+          logo.classList.add("logo-glitch");
+          clearTimeout(logoGlitchCleanup);
+          logoGlitchCleanup = setTimeout(() => {
+            logo.classList.remove("logo-glitch");
+          }, LOGO_GLITCH_DURATION);
         }
 
-        function scheduleLogoSpiral(initialDelay = LOGO_SPIRAL_INTERVAL) {
+        function scheduleLogoGlitch(initialDelay = LOGO_GLITCH_INTERVAL) {
           clearTimeout(logoTimer);
-          const jitter = Math.random() * LOGO_SPIRAL_JITTER;
+          const jitter = Math.random() * LOGO_GLITCH_JITTER;
           const delay = Math.max(0, initialDelay) + jitter;
           logoTimer = setTimeout(() => {
             if (!startScreen.classList.contains("hidden")) {
-              triggerLogoSpiral();
+              triggerLogoGlitch();
             }
-            scheduleLogoSpiral(LOGO_SPIRAL_INTERVAL);
+            scheduleLogoGlitch(LOGO_GLITCH_INTERVAL);
           }, delay);
         }
 
@@ -768,8 +910,8 @@
           startScreen.classList.remove("hidden");
           resultShown = false;
           highScoreEl.classList.add("hidden");
-          triggerLogoSpiral();
-          scheduleLogoSpiral();
+          triggerLogoGlitch();
+          scheduleLogoGlitch();
           scheduleBubble();
         }
 
@@ -784,9 +926,9 @@
           });
 
         if (!startScreen.classList.contains("hidden")) {
-          triggerLogoSpiral();
+          triggerLogoGlitch();
         }
-        scheduleLogoSpiral();
+        scheduleLogoGlitch();
         scheduleBubble();
       })();
     </script>
