@@ -54,12 +54,6 @@ This kiosk-focused build removes all audio and restricted browser APIs. Apps Scr
 - Players can start a new round immediately after each game.
 - Consecutive wins continue to ramp difficulty to keep the challenge lively.
 
-
-## Mobile Optimizations
-
-- Phones render smaller stains, spread them across a wider vertical range, and clear with a quick tap.
-
-
 ## Cleaning Tips
 
 - Every round ends with a rotating eco-friendly cleaning tip to reinforce garment care.
