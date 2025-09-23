@@ -876,13 +876,36 @@
           ];
           const bw = bubble.offsetWidth;
           const bh = bubble.offsetHeight;
+          const basePaddingX = Math.max(16, rect.width * 0.05);
+          const basePaddingY = Math.max(16, rect.height * 0.05);
+          const safePaddingX = Math.min(
+            basePaddingX,
+            Math.max(0, (rect.width - bw) / 2),
+          );
+          const safePaddingY = Math.min(
+            basePaddingY,
+            Math.max(0, (maxY - bh) / 2),
+          );
+          const topLimit = Math.max(
+            safePaddingY,
+            Math.min(rect.height - safePaddingY - bh, maxY - bh),
+          );
+          const availableWidth = Math.max(0, rect.width - bw - safePaddingX * 2);
+          const availableHeight = Math.max(
+            0,
+            topLimit - safePaddingY,
+          );
           let x,
             y,
             tries = 0,
             ok;
           do {
-            x = Math.random() * (rect.width - bw);
-            y = Math.random() * (maxY - bh);
+            x =
+              safePaddingX +
+              (availableWidth > 0 ? Math.random() * availableWidth : 0);
+            y =
+              safePaddingY +
+              (availableHeight > 0 ? Math.random() * availableHeight : 0);
             ok = !avoid.some((r) => {
               const rx = r.left - rect.left;
               const ry = r.top - rect.top;
