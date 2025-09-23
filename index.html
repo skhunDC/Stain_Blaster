@@ -14,11 +14,11 @@
         z-index: 10;
       }
       .glitch-cannon {
-        position: absolute;
+        position: fixed;
         width: 220px;
         height: auto;
-        bottom: 1rem;
-        right: 1rem;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+        right: calc(env(safe-area-inset-right, 0px) + 1rem);
         transform-origin: bottom right;
         pointer-events: none;
         z-index: 50;
@@ -568,6 +568,7 @@
         const BASE_FIRE_RATE = 3000; // ms per extra stain
         const TOP_MARGIN = 50;
         const BOTTOM_MARGIN = 100;
+        const HIGH_SCORE_CLEARANCE = 16;
         const DEVICE = "kiosk";
         const GAME_TIME = 12; // seconds per round
         const RESET_DELAY = 60000; // ms before auto reset (4x longer)
@@ -597,6 +598,25 @@
             BASE_STAIN_START * Math.pow(1.15, winStreak),
           );
           FIRE_RATE = BASE_FIRE_RATE * Math.pow(0.85, winStreak);
+        }
+
+        function computeTopMargin(areaRect = gameArea.getBoundingClientRect()) {
+          const base = TOP_MARGIN;
+          if (
+            !areaRect ||
+            highScoreEl.classList.contains("hidden") ||
+            highScoreEl.offsetWidth === 0 ||
+            highScoreEl.offsetHeight === 0
+          ) {
+            return base;
+          }
+          const scoreRect = highScoreEl.getBoundingClientRect();
+          if (!scoreRect || (!scoreRect.width && !scoreRect.height)) {
+            return base;
+          }
+          const clearance =
+            scoreRect.bottom - areaRect.top + HIGH_SCORE_CLEARANCE;
+          return Math.max(base, clearance);
         }
         const STAIN_IMAGES = [
           "https://www.dublincleaners.com/wp-content/uploads/2025/08/Ketchup.png",
@@ -977,13 +997,17 @@
           s.src = randomImage();
           s.className = "stain";
           const rect = gameArea.getBoundingClientRect();
-          const spawnW = rect.width - STAIN_SIZE;
-          const spawnH = rect.height - STAIN_SIZE - TOP_MARGIN - BOTTOM_MARGIN;
+          const topMargin = computeTopMargin(rect);
+          const spawnW = Math.max(0, rect.width - STAIN_SIZE);
+          const spawnH = Math.max(
+            0,
+            rect.height - STAIN_SIZE - topMargin - BOTTOM_MARGIN,
+          );
           if (x === undefined) {
             x = Math.random() * spawnW;
           }
           if (y === undefined) {
-            y = Math.random() * spawnH + TOP_MARGIN;
+            y = Math.random() * spawnH + topMargin;
           }
           s.style.left = x + "px";
           s.style.top = y + "px";
@@ -1027,11 +1051,14 @@
           const area = gameArea.getBoundingClientRect();
           const mouthX = rect.left + rect.width * 0.15 - area.left;
           const mouthY = rect.top + rect.height * 0.15 - area.top;
-          const targetX = Math.random() * (area.width - STAIN_SIZE);
-          const targetY =
-            Math.random() *
-              (area.height - STAIN_SIZE - TOP_MARGIN - BOTTOM_MARGIN) +
-            TOP_MARGIN;
+          const topMargin = computeTopMargin(area);
+          const spawnW = Math.max(0, area.width - STAIN_SIZE);
+          const spawnH = Math.max(
+            0,
+            area.height - STAIN_SIZE - topMargin - BOTTOM_MARGIN,
+          );
+          const targetX = Math.random() * spawnW;
+          const targetY = Math.random() * spawnH + topMargin;
           const angle = Math.atan2(targetY - mouthY, targetX - mouthX);
           cannon.style.transform = `rotate(${angle}rad)`;
           const offset = 30;
