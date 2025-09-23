@@ -585,6 +585,7 @@
         const CANNON_MOUTH_OFFSETS = {
           [ACTIVE_CANNON_CORNER]: { x: 0.88, y: 0.36 },
         };
+        const ATTRACT_CANNON_IDLE_ANGLE = -Math.PI / 4;
 
         let STAIN_START = BASE_STAIN_START;
         let STAIN_SIZE = BASE_STAIN_SIZE;
@@ -1058,15 +1059,9 @@
           aimCannonAtRect(cannon, areaRect);
         }
 
-        function pointAttractCannonAtCenter() {
+        function pointAttractCannonIdle() {
           if (!attractCannon) return;
-          const viewportRect = {
-            left: 0,
-            top: 0,
-            width: window.innerWidth,
-            height: window.innerHeight,
-          };
-          aimCannonAtRect(attractCannon, viewportRect);
+          attractCannon.style.transform = `rotate(${ATTRACT_CANNON_IDLE_ANGLE}rad)`;
         }
 
         function applyCannonCorner(element) {
@@ -1082,7 +1077,7 @@
 
         window.addEventListener("resize", () => {
           requestAnimationFrame(() => {
-            pointAttractCannonAtCenter();
+            pointAttractCannonIdle();
             pointCannonAtCenter();
           });
         });
@@ -1395,7 +1390,7 @@
           startScreen.classList.remove("hidden");
           resultShown = false;
           applyCannonCorner(attractCannon);
-          requestAnimationFrame(pointAttractCannonAtCenter);
+          requestAnimationFrame(pointAttractCannonIdle);
           if (pendingHighScore !== null) {
             skipHighScoreName();
           } else {
@@ -1430,7 +1425,7 @@
         applyCannonCorner(attractCannon);
         applyCannonCorner(cannon);
         requestAnimationFrame(() => {
-          pointAttractCannonAtCenter();
+          pointAttractCannonIdle();
           pointCannonAtCenter();
         });
 
