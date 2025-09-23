@@ -51,6 +51,53 @@
         filter: hue-rotate(160deg) saturate(240%) brightness(1.2);
       }
 
+      #highScoreModal {
+        touch-action: none;
+      }
+
+      #highScoreModal .kb-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+      }
+
+      #highScoreModal .kb-key {
+        min-width: 72px;
+        padding: 1rem 1.2rem;
+        font-size: 1.75rem;
+        font-weight: 800;
+        border-radius: 1.1rem;
+        background: linear-gradient(145deg, #d1fae5, #6ee7b7);
+        color: #064e3b;
+        border: none;
+        box-shadow: 0 18px 32px rgba(16, 185, 129, 0.35);
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+      }
+
+      #highScoreModal .kb-key:active {
+        transform: scale(0.94);
+        box-shadow: 0 8px 16px rgba(16, 185, 129, 0.45);
+      }
+
+      #highScoreModal .kb-key--wide {
+        min-width: 120px;
+      }
+
+      #highScoreModal .kb-key--xl {
+        min-width: 200px;
+      }
+
+      #highScoreModal .kb-key--action {
+        background: linear-gradient(145deg, #34d399, #047857);
+        color: #ecfdf5;
+      }
+
+      #highScoreModal .kb-key--secondary {
+        background: linear-gradient(145deg, #fde68a, #f59e0b);
+        color: #78350f;
+      }
+
       .bubble {
         position: absolute;
         pointer-events: none;
@@ -344,8 +391,90 @@
     </div>
 
     <div
+      id="highScoreModal"
+      class="hidden absolute inset-0 z-[120] flex items-center justify-center bg-emerald-950/80 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="highScoreModalTitle"
+    >
+      <div
+        class="w-full max-w-3xl rounded-[2.5rem] border-4 border-emerald-500 bg-white px-6 py-8 text-center shadow-2xl md:px-12 md:py-12"
+      >
+        <div
+          id="highScoreModalTitle"
+          class="text-4xl font-black uppercase tracking-wide text-emerald-600 drop-shadow"
+        >
+          New Su-Stained High Score!
+        </div>
+        <div class="mt-4 text-lg text-stone-600">
+          Touch the keyboard below to add your name to the leaderboard.
+        </div>
+        <div class="mt-6">
+          <input
+            id="highScoreNameInput"
+            type="text"
+            inputmode="none"
+            autocomplete="off"
+            maxlength="18"
+            readonly
+            class="w-full rounded-[1.75rem] border-4 border-emerald-500 bg-emerald-50 px-6 py-4 text-center text-3xl font-black tracking-widest text-emerald-700 shadow-inner"
+            placeholder="ENTER YOUR NAME"
+          />
+          <div id="highScoreNotice" class="mt-2 h-6 text-sm font-semibold text-rose-500"></div>
+        </div>
+        <div id="highScoreKeyboard" class="mt-6 flex flex-col items-center gap-4">
+          <div class="kb-row">
+            <button class="kb-key" data-key="Q">Q</button>
+            <button class="kb-key" data-key="W">W</button>
+            <button class="kb-key" data-key="E">E</button>
+            <button class="kb-key" data-key="R">R</button>
+            <button class="kb-key" data-key="T">T</button>
+            <button class="kb-key" data-key="Y">Y</button>
+            <button class="kb-key" data-key="U">U</button>
+            <button class="kb-key" data-key="I">I</button>
+            <button class="kb-key" data-key="O">O</button>
+            <button class="kb-key" data-key="P">P</button>
+          </div>
+          <div class="kb-row">
+            <button class="kb-key" data-key="A">A</button>
+            <button class="kb-key" data-key="S">S</button>
+            <button class="kb-key" data-key="D">D</button>
+            <button class="kb-key" data-key="F">F</button>
+            <button class="kb-key" data-key="G">G</button>
+            <button class="kb-key" data-key="H">H</button>
+            <button class="kb-key" data-key="J">J</button>
+            <button class="kb-key" data-key="K">K</button>
+            <button class="kb-key" data-key="L">L</button>
+          </div>
+          <div class="kb-row">
+            <button class="kb-key" data-key="Z">Z</button>
+            <button class="kb-key" data-key="X">X</button>
+            <button class="kb-key" data-key="C">C</button>
+            <button class="kb-key" data-key="V">V</button>
+            <button class="kb-key" data-key="B">B</button>
+            <button class="kb-key" data-key="N">N</button>
+            <button class="kb-key" data-key="M">M</button>
+            <button class="kb-key kb-key--wide" data-key="BACKSPACE">⌫</button>
+          </div>
+          <div class="kb-row">
+            <button class="kb-key kb-key--xl" data-key="SPACE">Space</button>
+            <button class="kb-key kb-key--wide kb-key--secondary" data-key="CLEAR">Clear</button>
+          </div>
+          <div class="kb-row">
+            <button id="skipHighScoreBtn" class="kb-key kb-key--wide kb-key--secondary" type="button">
+              Skip
+            </button>
+            <button id="saveHighScoreBtn" class="kb-key kb-key--wide kb-key--action" type="button">
+              Save Name
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
       id="highScore"
-      class="hidden absolute top-2 right-2 z-50 text-[1.2rem] text-white bg-emerald-600 px-4 py-2 rounded-lg shadow-lg text-right"
+      class="hidden absolute top-2 right-2 z-50 rounded-lg bg-emerald-600 px-5 py-3 text-right text-white shadow-lg"
     ></div>
 
     <script>
@@ -498,6 +627,16 @@
         const logo = document.getElementById("logo");
         const playBtn = document.getElementById("playBtn");
         const highScoreEl = document.getElementById("highScore");
+        const highScoreModal = document.getElementById("highScoreModal");
+        const highScoreNameInput = document.getElementById("highScoreNameInput");
+        const highScoreKeyboard = document.getElementById("highScoreKeyboard");
+        const highScoreNotice = document.getElementById("highScoreNotice");
+        const saveHighScoreBtn = document.getElementById("saveHighScoreBtn");
+        const skipHighScoreBtn = document.getElementById("skipHighScoreBtn");
+        const DEFAULT_HIGH_SCORE_NAME = "STAIN CHAMP";
+        const MAX_NAME_LENGTH = 18;
+        let pendingHighScore = null;
+        let pendingHighScoreTimestamp = 0;
         let remaining,
           total,
           seconds,
@@ -509,48 +648,165 @@
           logoGlitchCleanup,
           resultShown = false;
 
-        let inMemoryHighScore = { score: 0, timestamp: 0 };
+        let inMemoryHighScore = { score: 0, name: "", timestamp: 0 };
+
+        function sanitizeName(name) {
+          return String(name || "")
+            .replace(/[^A-Za-z0-9 .,'&-]/g, "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toUpperCase()
+            .slice(0, MAX_NAME_LENGTH);
+        }
 
         function loadHighScore() {
           try {
-            return (
-              JSON.parse(localStorage.getItem("sbHighScore") || "null") ||
-              inMemoryHighScore
-            );
-          } catch {
-            return inMemoryHighScore;
-          }
+            const stored = localStorage.getItem("sbHighScore");
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              const normalized = {
+                score: Math.max(0, Math.floor(Number(parsed?.score) || 0)),
+                name: sanitizeName(parsed?.name),
+                timestamp:
+                  parsed?.timestamp && Number(parsed.timestamp) > 0
+                    ? Number(parsed.timestamp)
+                    : 0,
+              };
+              inMemoryHighScore = normalized;
+              return normalized;
+            }
+          } catch {}
+          return inMemoryHighScore;
         }
 
-        function saveHighScore(score) {
-          const data = { score, timestamp: Date.now() };
+        function saveHighScore(record) {
+          const normalizedScore = Math.max(
+            0,
+            Math.floor(Number(record?.score) || 0),
+          );
+          const normalizedName = sanitizeName(record?.name);
+          const normalizedTimestamp =
+            record?.timestamp && Number(record.timestamp) > 0
+              ? Number(record.timestamp)
+              : normalizedScore > 0
+              ? Date.now()
+              : 0;
+          const normalized = {
+            score: normalizedScore,
+            name:
+              normalizedScore > 0
+                ? normalizedName || DEFAULT_HIGH_SCORE_NAME
+                : "",
+            timestamp: normalizedTimestamp,
+          };
           try {
-            localStorage.setItem("sbHighScore", JSON.stringify(data));
+            localStorage.setItem("sbHighScore", JSON.stringify(normalized));
           } catch {}
-          inMemoryHighScore = data;
-          return data;
+          inMemoryHighScore = normalized;
+          return normalized;
         }
 
         function updateHighScoreDisplay() {
-          const { score, timestamp } = loadHighScore();
+          const { score, name, timestamp } = loadHighScore();
           if (score > 0) {
-            highScoreEl.innerHTML = `
-<div class="font-bold">Su-Stained High Score: ${score}</div>
-<div>${new Date(timestamp).toLocaleString()}</div>`;
+            const holder = name || "???";
+            const parts = [
+              '<div class="text-xs uppercase tracking-wide opacity-90">Su-Stained High Score</div>',
+              `<div class="text-3xl font-black leading-tight">${score}</div>`,
+              `<div class="text-sm font-semibold">Champion: ${holder}</div>`,
+            ];
+            if (timestamp > 0) {
+              parts.push(
+                `<div class="text-[0.7rem] opacity-80">${new Date(
+                  timestamp,
+                ).toLocaleString()}</div>`,
+              );
+            }
+            highScoreEl.innerHTML = parts.join("");
           } else {
             highScoreEl.innerHTML =
-              '<div class="font-bold">Su-Stained High Score: 0</div>';
+              '<div class="text-xs uppercase tracking-wide opacity-90">Su-Stained High Score</div><div class="text-3xl font-black leading-tight">0</div><div class="text-sm font-semibold">Be the first to set it!</div>';
           }
         }
 
-        function checkHighScore(score) {
+        function isNewHighScore(score) {
           const { score: prev } = loadHighScore();
-          if (score > prev) {
-            saveHighScore(score);
-            updateHighScoreDisplay();
-            return true;
+          return score > prev;
+        }
+
+        function showHighScoreNameEntry(score) {
+          pendingHighScore = Math.max(0, Math.floor(score));
+          highScoreNameInput.value = "";
+          highScoreNotice.textContent = "";
+          pendingHighScoreTimestamp = Date.now();
+          highScoreModal.classList.remove("hidden");
+        }
+
+        function hideHighScoreNameEntry() {
+          highScoreModal.classList.add("hidden");
+          pendingHighScore = null;
+          pendingHighScoreTimestamp = 0;
+        }
+
+        function handleVirtualKeyPress(key) {
+          if (pendingHighScore === null) return;
+          let value = highScoreNameInput.value;
+          highScoreNotice.textContent = "";
+          if (key === "BACKSPACE") {
+            highScoreNameInput.value = value.slice(0, -1);
+            return;
           }
-          return false;
+          if (key === "CLEAR") {
+            highScoreNameInput.value = "";
+            return;
+          }
+          if (key === "SPACE") {
+            if (!value.length) {
+              highScoreNotice.textContent = "Add some letters first.";
+              return;
+            }
+            if (value.length >= MAX_NAME_LENGTH) {
+              highScoreNotice.textContent = "Max characters reached.";
+              return;
+            }
+            if (!value.endsWith(" ")) {
+              highScoreNameInput.value = `${value} `;
+            }
+            return;
+          }
+          if (value.length >= MAX_NAME_LENGTH) {
+            highScoreNotice.textContent = "Max characters reached.";
+            return;
+          }
+          highScoreNameInput.value = `${value}${key}`.slice(0, MAX_NAME_LENGTH);
+        }
+
+        function finalizeHighScore(rawName) {
+          if (pendingHighScore === null) return;
+          const cleaned = sanitizeName(rawName);
+          if (!cleaned) {
+            highScoreNotice.textContent =
+              "Add at least one letter for your name.";
+            return;
+          }
+          saveHighScore({
+            score: pendingHighScore,
+            name: cleaned,
+            timestamp: pendingHighScoreTimestamp || Date.now(),
+          });
+          updateHighScoreDisplay();
+          hideHighScoreNameEntry();
+        }
+
+        function skipHighScoreName() {
+          if (pendingHighScore === null) return;
+          saveHighScore({
+            score: pendingHighScore,
+            name: DEFAULT_HIGH_SCORE_NAME,
+            timestamp: pendingHighScoreTimestamp || Date.now(),
+          });
+          updateHighScoreDisplay();
+          hideHighScoreNameEntry();
         }
 
         function randomImage() {
@@ -720,6 +976,11 @@
         }
 
         function begin() {
+          if (pendingHighScore !== null) {
+            skipHighScoreName();
+          } else {
+            hideHighScoreNameEntry();
+          }
           clearTimeout(resetTimer);
           applyDifficulty();
           startScreen.classList.add("hidden");
@@ -872,7 +1133,7 @@
             }
             winStreak = 0;
           }
-          if (checkHighScore(payload.score)) {
+          if (isNewHighScore(payload.score)) {
             const hsWrap = document.createElement("div");
             hsWrap.className = "relative inline-block";
             const staticEl = document.createElement("div");
@@ -886,6 +1147,9 @@
             hsWrap.appendChild(staticEl);
             hsWrap.appendChild(flashEl);
             qrWrap.prepend(hsWrap);
+            showHighScoreNameEntry(payload.score);
+          } else {
+            updateHighScoreDisplay();
           }
           clearTimeout(resetTimer);
           resetTimer = setTimeout(() => {
@@ -909,11 +1173,37 @@
           resultScreen.classList.add("hidden");
           startScreen.classList.remove("hidden");
           resultShown = false;
-          highScoreEl.classList.add("hidden");
+          if (pendingHighScore !== null) {
+            skipHighScoreName();
+          } else {
+            hideHighScoreNameEntry();
+            updateHighScoreDisplay();
+          }
+          highScoreEl.classList.remove("hidden");
           triggerLogoGlitch();
           scheduleLogoGlitch();
           scheduleBubble();
         }
+
+        highScoreKeyboard.addEventListener("pointerdown", (event) => {
+          const keyBtn = event.target.closest("button[data-key]");
+          if (!keyBtn) return;
+          event.preventDefault();
+          handleVirtualKeyPress(keyBtn.dataset.key);
+        });
+
+        saveHighScoreBtn.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          finalizeHighScore(highScoreNameInput.value);
+        });
+
+        skipHighScoreBtn.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          skipHighScoreName();
+        });
+
+        updateHighScoreDisplay();
+        highScoreEl.classList.remove("hidden");
 
         playBtn.addEventListener("pointerdown", () => {
           startRound();
