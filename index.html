@@ -1044,10 +1044,7 @@
         }
 
         function moveCannonToRandomCorner() {
-          const choice =
-            CANNON_CORNER_CLASSES[
-              Math.floor(Math.random() * CANNON_CORNER_CLASSES.length)
-            ];
+          const choice = "glitch-cannon--bottom-right";
           CANNON_CORNER_CLASSES.forEach((cls) => cannon.classList.remove(cls));
           cannon.classList.add(choice);
           requestAnimationFrame(pointCannonAtCenter);
