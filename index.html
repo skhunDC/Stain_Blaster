@@ -677,82 +677,6 @@
         const skipHighScoreBtn = document.getElementById("skipHighScoreBtn");
         const DEFAULT_HIGH_SCORE_NAME = "STAIN CHAMP";
         const MAX_NAME_LENGTH = 18;
-        const PROFANITY_WORDS = [
-          "FUCK",
-          "FUCKS",
-          "FUCKER",
-          "FUCKERS",
-          "FUCKED",
-          "FUCKING",
-          "FUK",
-          "FUKK",
-          "FUKING",
-          "FUKKING",
-          "FUX",
-          "FUXX",
-          "SHIT",
-          "SHITS",
-          "SHITTY",
-          "BITCH",
-          "BITCHES",
-          "BITCHY",
-          "CUNT",
-          "CUNTS",
-          "PUSSY",
-          "PUSSIES",
-          "DICK",
-          "DICKS",
-          "DICKHEAD",
-          "DICKHEADS",
-          "COCK",
-          "COCKS",
-          "COCKSUCKER",
-          "COCKSUCKERS",
-          "PENIS",
-          "PENISES",
-          "VAGINA",
-          "VAGINAS",
-          "TIT",
-          "TITS",
-          "TITTY",
-          "TITTIES",
-          "BOOB",
-          "BOOBS",
-          "SLUT",
-          "SLUTS",
-          "WHORE",
-          "WHORES",
-          "ASSHOLE",
-          "ASSHOLES",
-          "MOTHERFUCKER",
-          "MOTHERFUCKERS",
-          "NIGGA",
-          "NIGGAS",
-          "NIGGER",
-          "NIGGERS",
-          "FAG",
-          "FAGS",
-          "FAGGOT",
-          "FAGGOTS",
-          "JIZZ",
-          "DILDO",
-          "DILDOS",
-          "PORN",
-          "HORNY",
-          "XXX",
-        ];
-        const LEET_REPLACEMENTS = {
-          0: "O",
-          1: "I",
-          2: "Z",
-          3: "E",
-          4: "A",
-          5: "S",
-          6: "G",
-          7: "T",
-          8: "B",
-          9: "G",
-        };
         let pendingHighScore = null;
         let pendingHighScoreTimestamp = 0;
         let remaining,
@@ -778,71 +702,18 @@
             .slice(0, MAX_NAME_LENGTH);
         }
 
-        function normalizeProfanityToken(token) {
-          return token.replace(/[0-9]/g, (digit) => LEET_REPLACEMENTS[digit] || digit);
-        }
-
-        function containsProfanity(value) {
-          if (!value) return false;
-          const upper = value.toUpperCase();
-          const seen = new Set();
-          const addCandidate = (candidate) => {
-            if (!candidate) return;
-            const trimmed = candidate.trim();
-            if (trimmed) {
-              seen.add(trimmed);
-              const collapsed = trimmed.replace(/[^A-Z0-9]+/g, "");
-              if (collapsed) {
-                seen.add(collapsed);
-              }
-            }
-          };
-          addCandidate(upper);
-          addCandidate(normalizeProfanityToken(upper));
-          const tokens = upper.split(/[^A-Z0-9]+/).filter(Boolean);
-          if (tokens.length) {
-            addCandidate(tokens.join(""));
-          }
-          for (const token of tokens) {
-            addCandidate(token);
-            addCandidate(normalizeProfanityToken(token));
-          }
-          const normalizedCollapsed = normalizeProfanityToken(
-            upper.replace(/[^A-Z0-9]+/g, ""),
-          );
-          addCandidate(normalizedCollapsed);
-          for (const candidate of seen) {
-            for (const bad of PROFANITY_WORDS) {
-              if (candidate.includes(bad)) {
-                return true;
-              }
-            }
-          }
-          return false;
-        }
-
         function loadHighScore() {
           try {
             const stored = localStorage.getItem("sbHighScore");
             if (stored) {
               const parsed = JSON.parse(stored);
-              const normalizedScore = Math.max(
-                0,
-                Math.floor(Number(parsed?.score) || 0),
-              );
-              const normalizedTimestamp =
-                parsed?.timestamp && Number(parsed.timestamp) > 0
-                  ? Number(parsed.timestamp)
-                  : 0;
-              const normalizedName = sanitizeName(parsed?.name);
-              const safeName =
-                normalizedScore > 0 && normalizedName && containsProfanity(normalizedName)
-                  ? DEFAULT_HIGH_SCORE_NAME
-                  : normalizedName;
               const normalized = {
-                score: normalizedScore,
-                name: safeName,
-                timestamp: normalizedTimestamp,
+                score: Math.max(0, Math.floor(Number(parsed?.score) || 0)),
+                name: sanitizeName(parsed?.name),
+                timestamp:
+                  parsed?.timestamp && Number(parsed.timestamp) > 0
+                    ? Number(parsed.timestamp)
+                    : 0,
               };
               inMemoryHighScore = normalized;
               return normalized;
@@ -857,10 +728,6 @@
             Math.floor(Number(record?.score) || 0),
           );
           const normalizedName = sanitizeName(record?.name);
-          const safeName =
-            normalizedScore > 0 && normalizedName && containsProfanity(normalizedName)
-              ? DEFAULT_HIGH_SCORE_NAME
-              : normalizedName;
           const normalizedTimestamp =
             record?.timestamp && Number(record.timestamp) > 0
               ? Number(record.timestamp)
@@ -871,7 +738,7 @@
             score: normalizedScore,
             name:
               normalizedScore > 0
-                ? safeName || DEFAULT_HIGH_SCORE_NAME
+                ? normalizedName || DEFAULT_HIGH_SCORE_NAME
                 : "",
             timestamp: normalizedTimestamp,
           };
@@ -965,10 +832,6 @@
               "Add at least one letter for your name.";
             return;
           }
-          if (containsProfanity(cleaned)) {
-            highScoreNotice.textContent = "That name isn't allowed.";
-            return;
-          }
           saveHighScore({
             score: pendingHighScore,
             name: cleaned,
@@ -1002,7 +865,7 @@
           if (startScreen.querySelectorAll(".bubble").length >= 3) return;
           const bubble = document.createElement("div");
           bubble.className =
-            "bubble absolute max-w-[320px] px-6 py-4 rounded-[2rem] border-[3px] border-emerald-500 bg-gradient-to-br from-white via-emerald-50 to-emerald-100/80 text-emerald-700 font-extrabold text-center text-lg leading-snug tracking-wide shadow-xl ring-4 ring-emerald-200/60 backdrop-blur-sm pointer-events-none";
+            "bubble relative max-w-[320px] px-6 py-4 rounded-[2rem] border-[3px] border-emerald-500 bg-gradient-to-br from-white via-emerald-50 to-emerald-100/80 text-emerald-700 font-extrabold text-center text-lg leading-snug tracking-wide shadow-xl ring-4 ring-emerald-200/60 backdrop-blur-sm pointer-events-none";
           bubble.innerHTML = `${randomLine()}<svg class="absolute -top-3 -right-3 w-6 h-6 text-emerald-400 drop-shadow-md" viewBox="0 0 20 20" fill="currentColor"><path d="M10 0l2.09 6.26L18.18 7.5l-5.09 3.7L14.18 18 10 14.27 5.82 18l1.09-6.8L1.82 7.5l6.09-1.24L10 0z"/></svg>`;
           startScreen.appendChild(bubble);
           const rect = startScreen.getBoundingClientRect();
