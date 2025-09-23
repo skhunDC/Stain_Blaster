@@ -515,7 +515,7 @@
 
     <div
       id="highScore"
-      class="hidden absolute top-2 right-2 z-50 rounded-lg bg-emerald-600 px-5 py-3 text-right text-white shadow-lg"
+      class="hidden absolute top-2 right-2 z-50 flex flex-col items-center justify-center gap-1 rounded-lg bg-emerald-600 px-5 py-3 text-center text-white shadow-lg"
     ></div>
 
     <script>
@@ -775,7 +775,7 @@
             const holder = name || "???";
             const parts = [
               '<div class="text-xs uppercase tracking-wide opacity-90">Su-Stained High Score</div>',
-              `<div class="text-3xl font-black leading-tight">${score}</div>`,
+              `<div class="text-4xl font-black leading-tight">${score}</div>`,
               `<div class="text-sm font-semibold">Champion: ${holder}</div>`,
             ];
             if (timestamp > 0) {
@@ -788,7 +788,7 @@
             highScoreEl.innerHTML = parts.join("");
           } else {
             highScoreEl.innerHTML =
-              '<div class="text-xs uppercase tracking-wide opacity-90">Su-Stained High Score</div><div class="text-3xl font-black leading-tight">0</div><div class="text-sm font-semibold">Be the first to set it!</div>';
+              '<div class="text-xs uppercase tracking-wide opacity-90">Su-Stained High Score</div><div class="text-4xl font-black leading-tight">0</div><div class="text-sm font-semibold">Be the first to set it!</div>';
           }
         }
 
@@ -885,7 +885,7 @@
           if (startScreen.querySelectorAll(".bubble").length >= 3) return;
           const bubble = document.createElement("div");
           bubble.className =
-            "bubble relative max-w-[320px] px-6 py-4 rounded-[2rem] border-[3px] border-emerald-500 bg-gradient-to-br from-white via-emerald-50 to-emerald-100/80 text-emerald-700 font-extrabold text-center text-lg leading-snug tracking-wide shadow-xl ring-4 ring-emerald-200/60 backdrop-blur-sm pointer-events-none";
+            "bubble max-w-[320px] px-6 py-4 rounded-[2rem] border-[3px] border-emerald-500 bg-gradient-to-br from-white via-emerald-50 to-emerald-100/80 text-emerald-700 font-extrabold text-center text-lg leading-snug tracking-wide shadow-xl ring-4 ring-emerald-200/60 backdrop-blur-sm pointer-events-none";
           bubble.innerHTML = `${randomLine()}<svg class="absolute -top-3 -right-3 w-6 h-6 text-emerald-400 drop-shadow-md" viewBox="0 0 20 20" fill="currentColor"><path d="M10 0l2.09 6.26L18.18 7.5l-5.09 3.7L14.18 18 10 14.27 5.82 18l1.09-6.8L1.82 7.5l6.09-1.24L10 0z"/></svg>`;
           startScreen.appendChild(bubble);
           const rect = startScreen.getBoundingClientRect();
