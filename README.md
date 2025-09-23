@@ -81,8 +81,6 @@ Each play logs a row to the Google Sheet with the following columns:
 | B      | Stains cleared | Number of stains the player removed      |
 | C      | Stains missed  | Stains left when time expired            |
 | D      | Seconds taken  | Duration of the game in seconds          |
-| E      | Device         | Source device label (kiosk or mobile)    |
-
 | F      | Prize Tier     | Awarded tier (Common/Uncommon/Rare/Epic) |
 | G      | Prize Code     | Unique code for credit prizes            |
 
