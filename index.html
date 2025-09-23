@@ -17,11 +17,29 @@
         position: fixed;
         width: 220px;
         height: auto;
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
-        right: calc(env(safe-area-inset-right, 0px) + 1rem);
-        transform-origin: bottom right;
         pointer-events: none;
         z-index: 50;
+      }
+      .glitch-cannon--top-left {
+        top: calc(env(safe-area-inset-top, 0px) + 1rem);
+        left: calc(env(safe-area-inset-left, 0px) + 1rem);
+        right: auto;
+        bottom: auto;
+        transform-origin: top left;
+      }
+      .glitch-cannon--bottom-left {
+        top: auto;
+        left: calc(env(safe-area-inset-left, 0px) + 1rem);
+        right: auto;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+        transform-origin: bottom left;
+      }
+      .glitch-cannon--bottom-right {
+        top: auto;
+        left: auto;
+        right: calc(env(safe-area-inset-right, 0px) + 1rem);
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+        transform-origin: bottom right;
       }
       .glitch-shell {
         position: relative;
@@ -356,7 +374,7 @@
       </button>
       <div
         id="attractCannon"
-        class="glitch-shell glitch-cannon select-none"
+        class="glitch-shell glitch-cannon glitch-cannon--bottom-right select-none"
         aria-hidden="true"
       >
         <img
@@ -386,7 +404,7 @@
       <!-- stains injected here -->
       <div
         id="cannon"
-        class="glitch-shell glitch-cannon select-none"
+        class="glitch-shell glitch-cannon glitch-cannon--bottom-right select-none"
         aria-hidden="true"
       >
         <img
@@ -572,6 +590,11 @@
         const DEVICE = "kiosk";
         const GAME_TIME = 12; // seconds per round
         const RESET_DELAY = 60000; // ms before auto reset (4x longer)
+        const CANNON_CORNER_CLASSES = [
+          "glitch-cannon--top-left",
+          "glitch-cannon--bottom-left",
+          "glitch-cannon--bottom-right",
+        ];
 
         let STAIN_START = BASE_STAIN_START;
         let STAIN_SIZE = BASE_STAIN_SIZE;
@@ -992,6 +1015,48 @@
           }, delay);
         }
 
+        function getCannonMouthPosition(
+          areaRect = gameArea.getBoundingClientRect(),
+        ) {
+          const rect = cannon.getBoundingClientRect();
+          if (!rect.width || !rect.height) {
+            return { pageX: rect.left, pageY: rect.top, areaX: 0, areaY: 0 };
+          }
+          const pageX = rect.left + rect.width * 0.15;
+          const pageY = rect.top + rect.height * 0.15;
+          return {
+            pageX,
+            pageY,
+            areaX: pageX - areaRect.left,
+            areaY: pageY - areaRect.top,
+          };
+        }
+
+        function pointCannonAtCenter() {
+          if (gameArea.classList.contains("hidden")) return;
+          const areaRect = gameArea.getBoundingClientRect();
+          if (!areaRect.width || !areaRect.height) return;
+          const { pageX, pageY } = getCannonMouthPosition(areaRect);
+          const centerX = areaRect.left + areaRect.width / 2;
+          const centerY = areaRect.top + areaRect.height / 2;
+          const angle = Math.atan2(centerY - pageY, centerX - pageX);
+          cannon.style.transform = `rotate(${angle}rad)`;
+        }
+
+        function moveCannonToRandomCorner() {
+          const choice =
+            CANNON_CORNER_CLASSES[
+              Math.floor(Math.random() * CANNON_CORNER_CLASSES.length)
+            ];
+          CANNON_CORNER_CLASSES.forEach((cls) => cannon.classList.remove(cls));
+          cannon.classList.add(choice);
+          requestAnimationFrame(pointCannonAtCenter);
+        }
+
+        window.addEventListener("resize", () => {
+          requestAnimationFrame(pointCannonAtCenter);
+        });
+
         function spawnStain(x, y) {
           const s = document.createElement("img");
           s.src = randomImage();
@@ -1047,10 +1112,8 @@
         }
 
         function fireCannon() {
-          const rect = cannon.getBoundingClientRect();
           const area = gameArea.getBoundingClientRect();
-          const mouthX = rect.left + rect.width * 0.15 - area.left;
-          const mouthY = rect.top + rect.height * 0.15 - area.top;
+          const { areaX: mouthX, areaY: mouthY } = getCannonMouthPosition(area);
           const topMargin = computeTopMargin(area);
           const spawnW = Math.max(0, area.width - STAIN_SIZE);
           const spawnH = Math.max(
@@ -1060,12 +1123,12 @@
           const targetX = Math.random() * spawnW;
           const targetY = Math.random() * spawnH + topMargin;
           const angle = Math.atan2(targetY - mouthY, targetX - mouthX);
-          cannon.style.transform = `rotate(${angle}rad)`;
           const offset = 30;
           const startX = mouthX + Math.cos(angle) * offset;
           const startY = mouthY + Math.sin(angle) * offset;
           const s = spawnStain(startX, startY);
           animateProjectile(s, startX, startY, targetX, targetY);
+          pointCannonAtCenter();
         }
 
         function startRound() {
@@ -1092,6 +1155,7 @@
           clearTimeout(bubbleTimer);
           startScreen.querySelectorAll(".bubble").forEach((b) => b.remove());
           gameArea.classList.remove("hidden");
+          moveCannonToRandomCorner();
           triggerLogoGlitch();
           scheduleLogoGlitch(0);
           gameArea.querySelectorAll(".stain").forEach((s) => s.remove());
