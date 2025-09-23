@@ -20,6 +20,7 @@
         pointer-events: none;
         z-index: 50;
         transform-origin: 18% 64%;
+        transform: rotate(calc(180deg + var(--cannon-rotation, 0deg)));
       }
       .glitch-cannon--top-left {
         top: calc(env(safe-area-inset-top, 0px) + 1rem);
@@ -1049,7 +1050,7 @@
           const centerX = targetRect.left + targetRect.width / 2;
           const centerY = targetRect.top + targetRect.height / 2;
           const angle = Math.atan2(centerY - pageY, centerX - pageX);
-          element.style.transform = `rotate(${angle}rad)`;
+          element.style.setProperty("--cannon-rotation", `${angle}rad`);
         }
 
         function pointCannonAtCenter() {
@@ -1061,7 +1062,10 @@
 
         function pointAttractCannonIdle() {
           if (!attractCannon) return;
-          attractCannon.style.transform = `rotate(${ATTRACT_CANNON_IDLE_ANGLE}rad)`;
+          attractCannon.style.setProperty(
+            "--cannon-rotation",
+            `${ATTRACT_CANNON_IDLE_ANGLE}rad`,
+          );
         }
 
         function applyCannonCorner(element) {
