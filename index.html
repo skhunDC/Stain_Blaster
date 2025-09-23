@@ -23,37 +23,49 @@
         pointer-events: none;
         z-index: 50;
       }
+      #logo {
+        transform-origin: center;
+        filter: drop-shadow(0 18px 38px rgba(16, 185, 129, 0.35));
+      }
+
       .bubble {
         position: absolute;
         pointer-events: none;
+        filter: drop-shadow(0 20px 32px rgba(16, 185, 129, 0.35));
+        transform-origin: center;
+        text-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
       }
       .bubble::before {
         content: "";
         position: absolute;
-        bottom: -10px;
+        bottom: -14px;
         left: 50%;
         transform: translateX(-50%);
-        border-width: 10px 10px 0 10px;
+        border-width: 14px 14px 0 14px;
         border-style: solid;
-        border-color: #059669 transparent transparent transparent;
+        border-color: #10b981 transparent transparent transparent;
       }
       .bubble::after {
         content: "";
         position: absolute;
-        bottom: -8px;
+        bottom: -11px;
         left: 50%;
         transform: translateX(-50%);
-        border-width: 8px 8px 0 8px;
+        border-width: 11px 11px 0 11px;
         border-style: solid;
-        border-color: #fff transparent transparent transparent;
+        border-color: rgba(255, 255, 255, 0.95) transparent transparent
+          transparent;
       }
       @keyframes bubble-in {
         0% {
-          transform: scale(0.6);
+          transform: scale(0.45);
           opacity: 0;
         }
-        60% {
-          transform: scale(1.2);
+        55% {
+          transform: scale(1.18);
+        }
+        75% {
+          transform: scale(0.96);
         }
         100% {
           transform: scale(1);
@@ -64,6 +76,18 @@
         to {
           transform: scale(0.8);
           opacity: 0;
+        }
+      }
+
+      @keyframes bubble-glow {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+          filter: drop-shadow(0 20px 32px rgba(16, 185, 129, 0.35));
+        }
+        50% {
+          transform: translateY(-8px) scale(1.05);
+          filter: drop-shadow(0 28px 38px rgba(16, 185, 129, 0.45));
         }
       }
 
@@ -82,6 +106,28 @@
       .flash {
         animation: flash 1s infinite;
       }
+
+      .logo-spiral {
+        animation: logo-spiral 2.4s ease-in-out;
+      }
+
+      @keyframes logo-spiral {
+        0% {
+          transform: scale(1) rotate(0deg);
+        }
+        30% {
+          transform: scale(1.12) rotate(200deg);
+        }
+        55% {
+          transform: scale(1.2) rotate(410deg);
+        }
+        75% {
+          transform: scale(1.08) rotate(540deg);
+        }
+        100% {
+          transform: scale(1) rotate(720deg);
+        }
+      }
     </style>
   </head>
   <body class="h-full bg-white overflow-hidden">
@@ -94,7 +140,7 @@
         id="logo"
         src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
         alt="Dublin Cleaners"
-        class="w-56"
+        class="w-72 md:w-80 max-w-sm drop-shadow-2xl transition-transform duration-700 ease-out"
       />
       <div class="text-5xl font-bold text-stone-700 text-center leading-tight">
         Stain Blaster
@@ -258,6 +304,9 @@
         const BUBBLE_INTERVAL = 4000; // ms between spawns
         const BUBBLE_JITTER = 1000; // ms random jitter
         const BUBBLE_DURATION = 5000; // ms visible
+        const LOGO_SPIRAL_INTERVAL = 14000; // ms between spiral triggers
+        const LOGO_SPIRAL_JITTER = 5000; // ms random offset
+        const LOGO_SPIRAL_DURATION = 2400; // ms animation length
         const TIP_DISCLAIMER =
           "\n\n<em>Ensure safe for care labels and understand restrictions. ATTEMPT AT YOUR OWN RISK – we are not responsible for any damage you cause to your garment.</em>";
         const cleaningTips = [
@@ -314,6 +363,8 @@
           startTime,
           fireInterval,
           bubbleTimer,
+          logoTimer,
+          logoSpiralCleanup,
           resultShown = false;
 
         let inMemoryHighScore = { score: 0, timestamp: 0 };
@@ -373,8 +424,8 @@
           if (startScreen.querySelectorAll(".bubble").length >= 3) return;
           const bubble = document.createElement("div");
           bubble.className =
-            "bubble max-w-[220px] px-4 py-2 rounded-2xl border-2 border-emerald-600 bg-white text-emerald-700 font-bold text-center shadow-md pointer-events-none";
-          bubble.innerHTML = `${randomLine()}<svg class="absolute -top-2 -right-2 w-4 h-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path d="M10 0l2.09 6.26L18.18 7.5l-5.09 3.7L14.18 18 10 14.27 5.82 18l1.09-6.8L1.82 7.5l6.09-1.24L10 0z"/></svg>`;
+            "bubble relative max-w-[320px] px-6 py-4 rounded-[2rem] border-[3px] border-emerald-500 bg-gradient-to-br from-white via-emerald-50 to-emerald-100/80 text-emerald-700 font-extrabold text-center text-lg leading-snug tracking-wide shadow-xl ring-4 ring-emerald-200/60 backdrop-blur-sm pointer-events-none";
+          bubble.innerHTML = `${randomLine()}<svg class="absolute -top-3 -right-3 w-6 h-6 text-emerald-400 drop-shadow-md" viewBox="0 0 20 20" fill="currentColor"><path d="M10 0l2.09 6.26L18.18 7.5l-5.09 3.7L14.18 18 10 14.27 5.82 18l1.09-6.8L1.82 7.5l6.09-1.24L10 0z"/></svg>`;
           startScreen.appendChild(bubble);
           const rect = startScreen.getBoundingClientRect();
           const maxY = rect.height * 0.6;
@@ -406,7 +457,7 @@
           bubble.style.left = x + "px";
           bubble.style.top = y + "px";
           bubble.style.animation =
-            "bubble-in 0.6s ease-out, bubble-out 0.6s ease-in 4.4s forwards";
+            "bubble-in 0.65s cubic-bezier(0.22, 1.28, 0.68, 1.08), bubble-glow 3.8s ease-in-out 0.65s infinite alternate, bubble-out 0.6s ease-in 4.4s forwards";
           setTimeout(() => bubble.remove(), BUBBLE_DURATION);
         }
 
@@ -419,6 +470,30 @@
             },
             BUBBLE_INTERVAL + (Math.random() * 2 - 1) * BUBBLE_JITTER,
           );
+        }
+
+        function triggerLogoSpiral() {
+          if (!logo) return;
+          logo.classList.remove("logo-spiral");
+          // Force reflow so the animation can restart even if the class is present.
+          void logo.offsetWidth;
+          logo.classList.add("logo-spiral");
+          clearTimeout(logoSpiralCleanup);
+          logoSpiralCleanup = setTimeout(() => {
+            logo.classList.remove("logo-spiral");
+          }, LOGO_SPIRAL_DURATION);
+        }
+
+        function scheduleLogoSpiral(initialDelay = LOGO_SPIRAL_INTERVAL) {
+          clearTimeout(logoTimer);
+          const jitter = Math.random() * LOGO_SPIRAL_JITTER;
+          const delay = Math.max(0, initialDelay) + jitter;
+          logoTimer = setTimeout(() => {
+            if (!startScreen.classList.contains("hidden")) {
+              triggerLogoSpiral();
+            }
+            scheduleLogoSpiral(LOGO_SPIRAL_INTERVAL);
+          }, delay);
         }
 
         function spawnStain(x, y) {
@@ -693,6 +768,8 @@
           startScreen.classList.remove("hidden");
           resultShown = false;
           highScoreEl.classList.add("hidden");
+          triggerLogoSpiral();
+          scheduleLogoSpiral();
           scheduleBubble();
         }
 
@@ -706,6 +783,10 @@
             startRound();
           });
 
+        if (!startScreen.classList.contains("hidden")) {
+          triggerLogoSpiral();
+        }
+        scheduleLogoSpiral();
         scheduleBubble();
       })();
     </script>
