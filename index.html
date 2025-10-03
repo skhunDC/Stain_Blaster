@@ -361,6 +361,196 @@
         animation: logo-glitch-layer-cyan 1.1s steps(2, end);
       }
 
+      .powerup {
+        position: absolute;
+        width: 86px;
+        height: auto;
+        z-index: 25;
+        pointer-events: auto;
+        cursor: pointer;
+        filter: drop-shadow(0 18px 32px rgba(16, 185, 129, 0.45));
+        animation: powerup-float 2.4s ease-in-out infinite;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+
+      .powerup:active {
+        transform: scale(0.92);
+      }
+
+      .powerup--vanish {
+        opacity: 0;
+        transform: translateY(30px) scale(0.65);
+      }
+
+      @keyframes powerup-float {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-12px) scale(1.04);
+        }
+      }
+
+      .foam-burst {
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        margin-left: -130px;
+        margin-top: -130px;
+        pointer-events: none;
+        background: radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 255, 255, 0.95),
+            rgba(255, 255, 255, 0.15) 70%
+          ),
+          radial-gradient(
+            circle at 70% 40%,
+            rgba(209, 250, 229, 0.9),
+            rgba(6, 95, 70, 0.15) 70%
+          );
+        border-radius: 50%;
+        opacity: 0;
+        transform: scale(0.3);
+        transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+        box-shadow: 0 18px 42px rgba(16, 185, 129, 0.45);
+      }
+
+      .foam-burst.is-visible {
+        opacity: 0.85;
+        transform: scale(1);
+      }
+
+      #sparkleHud {
+        position: absolute;
+        top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(90vw, 520px);
+        z-index: 30;
+      }
+
+      #progressShell {
+        position: relative;
+        overflow: hidden;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(6, 95, 70, 0.45));
+        border: 2px solid rgba(16, 185, 129, 0.65);
+        box-shadow: inset 0 4px 12px rgba(15, 118, 110, 0.25), 0 18px 32px rgba(16, 185, 129, 0.35);
+        padding: 0.85rem 1.2rem;
+      }
+
+      #progressFill {
+        position: absolute;
+        inset: 0;
+        width: 0%;
+        border-radius: inherit;
+        background: linear-gradient(135deg, rgba(190, 242, 100, 0.9), rgba(14, 165, 233, 0.9));
+        transition: width 0.35s ease-out;
+      }
+
+      #progressLabel {
+        position: relative;
+        z-index: 1;
+      }
+
+      #timerShell {
+        position: absolute;
+        top: calc(env(safe-area-inset-top, 0px) + 1rem);
+        left: calc(env(safe-area-inset-left, 0px) + 1rem);
+        z-index: 30;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+      }
+
+      #timerShell .timer-label {
+        padding: 0.3rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        letter-spacing: 0.3em;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: rgba(236, 253, 245, 0.9);
+        background: rgba(13, 148, 136, 0.6);
+        backdrop-filter: blur(4px);
+      }
+
+      #timerShell #timer {
+        padding: 0.65rem 1.6rem;
+        border-radius: 1.75rem;
+        font-size: clamp(2.8rem, 4vw, 3.6rem);
+        font-weight: 900;
+        color: white;
+        background: linear-gradient(145deg, rgba(5, 150, 105, 0.95), rgba(16, 185, 129, 0.85));
+        box-shadow: 0 18px 34px rgba(5, 150, 105, 0.45);
+        line-height: 1;
+        min-width: 4.5rem;
+        text-align: center;
+      }
+
+      #powerupToast {
+        position: absolute;
+        top: calc(env(safe-area-inset-top, 0px) + 7.5rem);
+        left: 50%;
+        transform: translate(-50%, 14px);
+        z-index: 40;
+        padding: 0.85rem 1.6rem;
+        border-radius: 1.5rem;
+        font-weight: 700;
+        font-size: 1.05rem;
+        letter-spacing: 0.03em;
+        color: white;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.92), rgba(59, 130, 246, 0.85));
+        box-shadow: 0 14px 28px rgba(16, 185, 129, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+
+      #powerupToast[data-visible="true"] {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      #powerupToast[data-tone="rose"] {
+        background: linear-gradient(135deg, rgba(244, 63, 94, 0.95), rgba(251, 191, 36, 0.85));
+        box-shadow: 0 14px 28px rgba(244, 63, 94, 0.35);
+      }
+
+      #streakBadge {
+        position: absolute;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.65rem 1.6rem;
+        border-radius: 1.75rem;
+        font-weight: 800;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(6, 78, 59, 0.95);
+        background: rgba(209, 250, 229, 0.92);
+        box-shadow: 0 16px 32px rgba(16, 185, 129, 0.35);
+        backdrop-filter: blur(4px);
+        text-align: center;
+        z-index: 30;
+      }
+
+      @media (max-width: 640px) {
+        #sparkleHud {
+          top: calc(env(safe-area-inset-top, 0px) + 1rem);
+        }
+        #powerupToast {
+          top: calc(env(safe-area-inset-top, 0px) + 6.5rem);
+          font-size: 0.95rem;
+        }
+        #streakBadge {
+          font-size: 0.85rem;
+        }
+      }
+
       @keyframes logo-glitch-base {
         0%,
         12%,
@@ -522,7 +712,28 @@
           </div>
         </div>
       </div>
-      <div class="flex flex-col items-center gap-4">
+      <div class="text-xl text-stone-500 text-center">
+        Tap every stain off this shirt in 12 seconds to keep the garment
+        spotless and your prize streak alive!
+      </div>
+      <div class="grid gap-3 text-base text-stone-600 text-left max-w-xl px-4">
+        <div class="rounded-2xl bg-emerald-50/90 px-5 py-3 shadow-inner">
+          <span class="text-2xl mr-2">🧼</span>
+          Race the timer and blast each splatter—no rule changes, just a sudsy
+          remix of the classic challenge you know.
+        </div>
+        <div class="rounded-2xl bg-emerald-50/90 px-5 py-3 shadow-inner">
+          <span class="text-2xl mr-2">🎯</span>
+          Build streaks to flex your skills and unlock bigger bragging rights
+          while the difficulty ramps up each win.
+        </div>
+        <div class="rounded-2xl bg-emerald-50/90 px-5 py-3 shadow-inner">
+          <span class="text-2xl mr-2">💥</span>
+          Watch for surprise soap bars—snag one for a bubbly boost without
+          breaking the odds or prize tables.
+        </div>
+      </div>
+      <div class="flex flex-col items-center gap-3">
         <div class="bubble-wow">
           <img
             src="https://www.dublincleaners.com/wp-content/uploads/2025/10/bubble.png"
@@ -589,6 +800,28 @@
       id="gameArea"
       class="absolute inset-0 hidden bg-[url('https://www.dublincleaners.com/wp-content/uploads/2025/08/Whiteshirt.png')] bg-cover"
     >
+      <div id="sparkleHud" class="flex flex-col items-center gap-3 text-center">
+        <div
+          class="inline-flex items-center gap-2 rounded-full bg-emerald-600/90 px-5 py-2 text-xs font-black uppercase tracking-[0.35em] text-emerald-50 shadow-lg backdrop-blur-sm"
+        >
+          Spotless Mission
+        </div>
+        <div id="progressShell">
+          <div id="progressFill"></div>
+          <div
+            id="progressLabel"
+            class="text-sm font-semibold text-emerald-950 drop-shadow-sm md:text-base"
+          >
+            Tap stains to fill the meter!
+          </div>
+        </div>
+      </div>
+      <div id="timerShell">
+        <div class="timer-label">Seconds Left</div>
+        <div id="timer">12</div>
+      </div>
+      <div id="powerupToast"></div>
+      <div id="streakBadge">Spotless streak starts now!</div>
       <!-- stains injected here -->
       <div
         id="cannon"
@@ -610,12 +843,6 @@
           alt=""
           class="glitch-layer glitch-layer--cyan"
         />
-      </div>
-      <div
-        id="timer"
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl font-black text-yellow-400 drop-shadow-lg"
-      >
-        12
       </div>
     </div>
 
@@ -840,6 +1067,14 @@
           "https://www.dublincleaners.com/wp-content/uploads/2025/08/Dirt.png",
           "https://www.dublincleaners.com/wp-content/uploads/2025/08/Wine.png",
         ];
+        const SOAP_POWERUP_IMAGE =
+          "https://www.dublincleaners.com/wp-content/uploads/2025/10/soap.png";
+        const POWERUP_MIN_DELAY = 3600; // ms
+        const POWERUP_MAX_DELAY = 6800; // ms
+        const POWERUP_LIFETIME = 4200; // ms soap visible
+        const POWERUP_MAX_CLEARS = 3;
+        const SOAP_SLOW_DURATION = 2200; // ms pause on cannon
+        const POWERUP_TOAST_DURATION = 2400; // ms toast visibility
         const BUBBLE_LINES = [
           "Think you can wipe all the stains?",
           "Eco cleaning tips & discounts await!",
@@ -905,6 +1140,10 @@
         const logo = document.getElementById("logo");
         const playBtn = document.getElementById("playBtn");
         const highScoreEl = document.getElementById("highScore");
+        const powerupToast = document.getElementById("powerupToast");
+        const progressFill = document.getElementById("progressFill");
+        const progressLabel = document.getElementById("progressLabel");
+        const streakBadge = document.getElementById("streakBadge");
         const highScoreModal = document.getElementById("highScoreModal");
         const highScoreNameInput = document.getElementById("highScoreNameInput");
         const highScoreKeyboard = document.getElementById("highScoreKeyboard");
@@ -923,9 +1162,16 @@
           fireInterval,
           bubbleTimer,
           logoTimer,
+          fireResumeTimer,
+          powerUpTimer,
+          powerUpLifetimeTimer,
+          powerupToastTimer,
           resultShown = false;
 
         const glitchTimers = new Map();
+
+        let activePowerUp = null;
+        let isRoundActive = false;
 
         let inMemoryHighScore = { score: 0, name: "", timestamp: 0 };
 
@@ -1086,6 +1332,204 @@
           });
           updateHighScoreDisplay();
           hideHighScoreNameEntry();
+        }
+
+        function randomBetween(min, max) {
+          if (max <= min) return min;
+          return min + Math.random() * (max - min);
+        }
+
+        function updateProgressDisplay() {
+          if (!progressFill || !progressLabel) return;
+          if (!total) {
+            progressFill.style.width = "0%";
+            progressLabel.textContent = "Tap stains to fill the meter!";
+            return;
+          }
+          const cleaned = Math.max(0, total - remaining);
+          const ratio = Math.max(0, Math.min(1, cleaned / total));
+          progressFill.style.width = `${ratio * 100}%`;
+          const left = Math.max(0, remaining);
+          let vibe = "Keep scrubbing!";
+          if (cleaned === 0) {
+            vibe = "Make the first splash!";
+          } else if (ratio >= 0.85 && left > 0) {
+            vibe = "Final polish!";
+          } else if (ratio >= 0.5 && left > 0) {
+            vibe = "Halfway to spotless!";
+          } else if (left <= 5 && left > 0) {
+            vibe = "Almost there!";
+          }
+          if (left === 0 && cleaned > 0) {
+            vibe = "Sparkling! Shirt saved!";
+          }
+          progressLabel.textContent = `${cleaned} cleaned • ${left} left • ${vibe}`;
+        }
+
+        function updateStreakBadge() {
+          if (!streakBadge) return;
+          if (winStreak > 0) {
+            const plural = winStreak === 1 ? "" : "s";
+            streakBadge.textContent = `Streak ${winStreak}: ${winStreak} win${plural} running!`;
+          } else {
+            streakBadge.textContent = "Spotless streak starts now!";
+          }
+        }
+
+        function showPowerupToast(message, tone = "emerald") {
+          if (!powerupToast) return;
+          powerupToast.textContent = message;
+          if (tone === "rose") {
+            powerupToast.dataset.tone = "rose";
+          } else {
+            delete powerupToast.dataset.tone;
+          }
+          powerupToast.dataset.visible = "true";
+          clearTimeout(powerupToastTimer);
+          powerupToastTimer = setTimeout(() => {
+            hidePowerupToast();
+          }, POWERUP_TOAST_DURATION);
+        }
+
+        function hidePowerupToast() {
+          if (!powerupToast) return;
+          clearTimeout(powerupToastTimer);
+          delete powerupToast.dataset.visible;
+          delete powerupToast.dataset.tone;
+        }
+
+        function startFireLoop(rate = FIRE_RATE) {
+          clearInterval(fireInterval);
+          fireInterval = setInterval(fireCannon, rate);
+        }
+
+        function pauseCannon(duration = SOAP_SLOW_DURATION) {
+          if (!isRoundActive) return;
+          clearInterval(fireInterval);
+          clearTimeout(fireResumeTimer);
+          fireResumeTimer = setTimeout(() => {
+            if (isRoundActive) {
+              startFireLoop(FIRE_RATE);
+            }
+          }, Math.max(0, duration));
+        }
+
+        function clearPowerUps() {
+          clearTimeout(powerUpTimer);
+          clearTimeout(powerUpLifetimeTimer);
+          if (activePowerUp && activePowerUp.isConnected) {
+            activePowerUp.remove();
+          }
+          activePowerUp = null;
+        }
+
+        function createFoamBurst(x, y) {
+          if (!gameArea) return;
+          const burst = document.createElement("div");
+          burst.className = "foam-burst";
+          burst.style.left = `${x}px`;
+          burst.style.top = `${y}px`;
+          gameArea.appendChild(burst);
+          requestAnimationFrame(() => {
+            burst.classList.add("is-visible");
+          });
+          setTimeout(() => burst.remove(), 600);
+        }
+
+        function cleanRandomStains(maxCount) {
+          const stains = Array.from(gameArea.querySelectorAll(".stain"));
+          if (!stains.length) return 0;
+          let cleaned = 0;
+          for (const stain of stains.sort(() => Math.random() - 0.5)) {
+            if (typeof stain.__removeStain === "function") {
+              stain.__removeStain();
+              cleaned++;
+            }
+            if (cleaned >= maxCount) break;
+          }
+          return cleaned;
+        }
+
+        function schedulePowerUp(
+          delay = randomBetween(POWERUP_MIN_DELAY, POWERUP_MAX_DELAY),
+        ) {
+          clearTimeout(powerUpTimer);
+          if (!isRoundActive) return;
+          powerUpTimer = setTimeout(() => {
+            if (!isRoundActive) return;
+            if (activePowerUp) {
+              schedulePowerUp();
+              return;
+            }
+            spawnSoapPowerUp();
+          }, Math.max(0, delay));
+        }
+
+        function spawnSoapPowerUp() {
+          if (!isRoundActive || gameArea.classList.contains("hidden")) {
+            return;
+          }
+          if (activePowerUp && activePowerUp.isConnected) {
+            return;
+          }
+          const rect = gameArea.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
+          const soap = document.createElement("img");
+          soap.src = SOAP_POWERUP_IMAGE;
+          soap.alt = "Sudsy power-up";
+          soap.className = "powerup";
+          const soapSize = 86;
+          const topMargin = computeTopMargin(rect) + 30;
+          const spawnW = Math.max(0, rect.width - soapSize);
+          const spawnH = Math.max(
+            0,
+            rect.height - soapSize - topMargin - BOTTOM_MARGIN,
+          );
+          const x = Math.random() * spawnW;
+          const y = Math.random() * spawnH + topMargin;
+          soap.style.left = `${x}px`;
+          soap.style.top = `${y}px`;
+          soap.style.width = `${soapSize}px`;
+          soap.dataset.powerup = "soap";
+          soap.addEventListener(
+            "pointerdown",
+            () => activateSoapPowerUp(soap),
+            { once: true },
+          );
+          gameArea.appendChild(soap);
+          activePowerUp = soap;
+          showPowerupToast("Sudsy surprise! Tap the soap!");
+          clearTimeout(powerUpLifetimeTimer);
+          powerUpLifetimeTimer = setTimeout(() => {
+            if (activePowerUp !== soap) return;
+            soap.classList.add("powerup--vanish");
+            setTimeout(() => soap.remove(), 250);
+            activePowerUp = null;
+            showPowerupToast("The soap slipped away!", "rose");
+            schedulePowerUp();
+          }, POWERUP_LIFETIME);
+        }
+
+        function activateSoapPowerUp(soap) {
+          if (activePowerUp !== soap) return;
+          const areaRect = gameArea.getBoundingClientRect();
+          const soapRect = soap.getBoundingClientRect();
+          const centerX = soapRect.left - areaRect.left + soapRect.width / 2;
+          const centerY = soapRect.top - areaRect.top + soapRect.height / 2;
+          soap.remove();
+          activePowerUp = null;
+          clearTimeout(powerUpLifetimeTimer);
+          createFoamBurst(centerX, centerY);
+          const cleaned = cleanRandomStains(POWERUP_MAX_CLEARS);
+          if (cleaned > 0) {
+            showPowerupToast(
+              `Foam burst! ${cleaned} stain${cleaned > 1 ? "s" : ""} scrubbed!`,
+            );
+          } else {
+            showPowerupToast("Foam burst! Keep blasting!");
+          }
+          pauseCannon(SOAP_SLOW_DURATION);
+          schedulePowerUp();
         }
 
         function randomImage() {
@@ -1291,6 +1735,7 @@
           const s = document.createElement("img");
           s.src = randomImage();
           s.className = "stain";
+          s.dataset.stain = "true";
           const rect = gameArea.getBoundingClientRect();
           const topMargin = computeTopMargin(rect);
           const spawnW = Math.max(0, rect.width - STAIN_SIZE);
@@ -1310,14 +1755,20 @@
           s.style.height = STAIN_SIZE + "px";
           s.style.transform = `rotate(${Math.random() * 360}deg)`;
           const remove = () => {
+            if (!s.isConnected) return;
+            s.removeEventListener("pointerdown", remove);
             s.remove();
-            remaining--;
+            s.__removeStain = null;
+            remaining = Math.max(0, (remaining || 0) - 1);
+            updateProgressDisplay();
             if (remaining === 0 && seconds > 0) win();
           };
           s.addEventListener("pointerdown", remove);
+          s.__removeStain = remove;
           gameArea.appendChild(s);
-          remaining++;
-          total++;
+          remaining = (remaining || 0) + 1;
+          total = (total || 0) + 1;
+          updateProgressDisplay();
           return s;
         }
 
@@ -1370,6 +1821,7 @@
             google.script.run
               .withSuccessHandler((s) => {
                 winStreak = s;
+                updateStreakBadge();
               })
               .withFailureHandler(() => {})
               .refreshStreakTimer();
@@ -1384,6 +1836,10 @@
           }
           clearTimeout(resetTimer);
           applyDifficulty();
+          isRoundActive = true;
+          clearTimeout(fireResumeTimer);
+          hidePowerupToast();
+          clearPowerUps();
           startScreen.classList.add("hidden");
           clearTimeout(bubbleTimer);
           startScreen.querySelectorAll(".bubble").forEach((b) => b.remove());
@@ -1398,10 +1854,13 @@
           resultShown = false;
           updateHighScoreDisplay();
           highScoreEl.classList.remove("hidden");
+          updateStreakBadge();
+          updateProgressDisplay();
           for (let i = 0; i < STAIN_START; i++) spawnStain();
           seconds = GAME_TIME;
           timerEl.textContent = seconds;
           startTime = now();
+          clearInterval(countdown);
           countdown = setInterval(() => {
             seconds--;
             timerEl.textContent = seconds;
@@ -1411,7 +1870,8 @@
               lose();
             }
           }, 1000);
-          fireInterval = setInterval(fireCannon, FIRE_RATE);
+          startFireLoop(FIRE_RATE);
+          schedulePowerUp();
         }
 
         function win() {
@@ -1444,6 +1904,10 @@
         function showResult(success) {
           if (resultShown) return;
           resultShown = true;
+          isRoundActive = false;
+          clearTimeout(fireResumeTimer);
+          clearPowerUps();
+          hidePowerupToast();
           gameArea.classList.add("hidden");
           resultScreen.classList.remove("hidden");
           qrWrap.innerHTML = "";
@@ -1524,10 +1988,12 @@
               google.script.run
                 .withSuccessHandler((r) => {
                   winStreak = r.winStreak;
+                  updateStreakBadge();
                 })
                 .handleWin();
             } else {
               winStreak = 0;
+              updateStreakBadge();
             }
           } else {
             setResultMessage(
@@ -1548,11 +2014,13 @@
               google.script.run
                 .withSuccessHandler((r) => {
                   winStreak = r.winStreak;
+                  updateStreakBadge();
                 })
                 .withFailureHandler(() => {})
                 .resetStreak();
             }
             winStreak = 0;
+            updateStreakBadge();
           }
           if (isNewHighScore(payload.score)) {
             const hsWrap = document.createElement("div");
@@ -1591,6 +2059,10 @@
 
         function reset() {
           clearTimeout(resetTimer);
+          isRoundActive = false;
+          clearTimeout(fireResumeTimer);
+          clearPowerUps();
+          hidePowerupToast();
           resultScreen.classList.add("hidden");
           startScreen.classList.remove("hidden");
           resultShown = false;
