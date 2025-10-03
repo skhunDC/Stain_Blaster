@@ -39,29 +39,23 @@
 
       @media (max-height: 1024px) {
         #startScreen {
-          gap: clamp(2.5rem, 6vh, 3rem);
           padding-block: clamp(2.5rem, 7vh, 3.5rem);
         }
 
-        .start-screen-shell {
-          gap: clamp(2.5rem, 7vh, 3.25rem);
+        #startScreen .start-screen-card {
+          padding-block: clamp(2.25rem, 6.5vh, 3rem);
         }
       }
 
       @media (max-height: 820px) {
-        .start-screen-card {
-          padding-top: clamp(2rem, 6vh, 2.75rem);
-          padding-bottom: clamp(1.75rem, 6vh, 2.5rem);
-        }
-
-        .start-screen-info {
-          gap: clamp(0.75rem, 2.5vh, 1.25rem);
+        #startScreen .start-screen-card {
+          padding-block: clamp(1.85rem, 6vh, 2.4rem);
         }
 
         #playBtn {
           font-size: clamp(1.35rem, 3vw, 1.75rem);
-          padding-inline: clamp(1.75rem, 5vw, 2.5rem);
-          padding-block: clamp(0.9rem, 3vh, 1.2rem);
+          padding-inline: clamp(1.75rem, 5vw, 2.4rem);
+          padding-block: clamp(0.9rem, 3vh, 1.15rem);
         }
 
         .bubble-wow {
@@ -768,110 +762,119 @@
     <!-- Attract / Start Screen -->
     <div
       id="startScreen"
-      class="absolute inset-0 flex flex-col items-center justify-start lg:justify-center gap-12 bg-gradient-to-b from-emerald-50 via-white to-white touch-pan-y select-none px-6 pt-24 pb-16 md:pt-28 md:pb-20 overflow-y-auto"
+      class="absolute inset-0 overflow-y-auto bg-gradient-to-b from-emerald-50 via-white to-white px-6 py-12 sm:py-16 lg:py-20 touch-pan-y select-none"
     >
-      <div class="start-screen-shell w-full max-w-6xl flex flex-col items-center gap-12 xl:flex-row xl:items-start xl:justify-center xl:gap-16">
-        <div class="flex-1 max-w-3xl flex flex-col items-center gap-8">
-          <div class="w-full">
+      <div class="mx-auto flex w-full max-w-6xl flex-col gap-12">
+        <div class="grid items-stretch gap-10 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+          <section
+            class="start-screen-card relative flex flex-col gap-10 overflow-hidden rounded-[32px] border border-emerald-100/70 bg-white/95 px-8 py-12 shadow-[0_25px_60px_rgba(16,185,129,0.18)] backdrop-blur-sm md:px-12"
+          >
             <div
-              class="start-screen-card flex flex-col items-center gap-6 rounded-[32px] border border-emerald-100/70 bg-white/90 px-8 pt-12 pb-10 shadow-[0_25px_60px_rgba(16,185,129,0.18)] backdrop-blur-sm md:px-12"
+              class="pointer-events-none absolute -top-32 -right-32 hidden h-72 w-72 rounded-full bg-emerald-100/60 blur-3xl lg:block"
+              aria-hidden="true"
+            ></div>
+            <div class="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-12">
+              <div class="flex flex-1 flex-col items-center gap-6 text-center lg:items-start lg:text-left">
+                <div class="w-56 sm:w-64 md:w-72">
+                  <div
+                    id="logo"
+                    class="glitch-shell relative w-full max-w-sm drop-shadow-2xl transition-transform duration-700 ease-out"
+                  >
+                    <img
+                      src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
+                      alt="Dublin Cleaners"
+                      class="glitch-main"
+                    />
+                    <img
+                      src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
+                      alt=""
+                      aria-hidden="true"
+                      class="glitch-layer glitch-layer--red"
+                    />
+                    <img
+                      src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
+                      alt=""
+                      aria-hidden="true"
+                      class="glitch-layer glitch-layer--cyan"
+                    />
+                  </div>
+                </div>
+                <div class="flex flex-col items-center gap-5 lg:items-start">
+                  <div id="startScreenTitle" class="text-4xl sm:text-5xl font-black tracking-tight text-emerald-900">
+                    Stain Blaster
+                  </div>
+                  <div
+                    id="startScreenSubtitle"
+                    class="text-base md:text-lg lg:text-xl text-emerald-700/80 max-w-2xl"
+                  >
+                    Swipe away stains in 12 seconds to unlock expert fabric care tips,
+                    instant prizes, and exclusive Dublin Cleaners discounts.
+                  </div>
+                  <div id="startScreenLead" class="text-lg md:text-xl text-stone-500 max-w-2xl">
+                    Tap every stain off this shirt before the timer runs dry to keep the garment spotless and your prize streak alive.
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-col items-center gap-4">
+                <div class="bubble-wow" id="playBubble">
+                  <img
+                    src="https://www.dublincleaners.com/wp-content/uploads/2025/10/bubble.png"
+                    alt="Glowing soap bubble"
+                    class="bubble-wow__image"
+                  />
+                  <div class="bubble-wow__sparkle bubble-wow__sparkle--one" aria-hidden="true"></div>
+                  <div class="bubble-wow__sparkle bubble-wow__sparkle--two" aria-hidden="true"></div>
+                  <div class="bubble-wow__sparkle bubble-wow__sparkle--three" aria-hidden="true"></div>
+                  <button
+                    id="playBtn"
+                    class="bubble-wow__button px-8 py-4 text-2xl shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+                  >
+                    Pop to Play!
+                  </button>
+                </div>
+                <div class="bubble-wow__caption text-emerald-700 text-xs md:text-sm font-semibold text-center">
+                  Tap the magic bubble to launch the suds cannon
+                </div>
+              </div>
+            </div>
+          </section>
+          <aside class="flex flex-col gap-6">
+            <div
+              class="start-screen-card flex flex-col gap-6 rounded-[28px] border border-emerald-100/70 bg-white/90 px-6 py-8 shadow-[0_18px_40px_rgba(16,185,129,0.16)] backdrop-blur-sm md:px-8"
             >
-              <div class="w-full flex justify-center">
-                <div
-                  id="logo"
-                  class="glitch-shell relative w-64 sm:w-72 md:w-80 max-w-sm drop-shadow-2xl transition-transform duration-700 ease-out"
-                >
-                  <img
-                    src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
-                    alt="Dublin Cleaners"
-                    class="glitch-main"
-                  />
-                  <img
-                    src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
-                    alt=""
-                    aria-hidden="true"
-                    class="glitch-layer glitch-layer--red"
-                  />
-                  <img
-                    src="https://www.dublincleaners.com/wp-content/uploads/2025/06/LogosHQ.png"
-                    alt=""
-                    aria-hidden="true"
-                    class="glitch-layer glitch-layer--cyan"
-                  />
-                </div>
-              </div>
-              <div class="text-center">
-                <div id="startScreenTitle" class="text-5xl font-black tracking-tight text-emerald-900">
-                  Stain Blaster
-                </div>
-                <div id="startScreenSubtitle" class="mt-4 text-lg md:text-xl text-emerald-700/80">
-                  Swipe the stains away in 12 seconds for cleaning tips, prizes,
-                  and exclusive Dublin Cleaners discounts.
-                </div>
+              <h2 class="text-lg font-extrabold uppercase tracking-[0.2em] text-emerald-600/90">
+                How to Play
+              </h2>
+              <ul class="space-y-4 text-base text-stone-600">
+                <li class="flex items-start gap-3">
+                  <span class="text-2xl leading-none">🧼</span>
+                  <span>Race the timer and blast every splatter in sight—same beloved challenge with a sudsy glow-up.</span>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="text-2xl leading-none">🎯</span>
+                  <span>Stack spotless streaks to flex your skills and unlock bigger bragging rights as difficulty ramps up.</span>
+                </li>
+                <li class="flex items-start gap-3">
+                  <span class="text-2xl leading-none">💥</span>
+                  <span>Watch for surprise soap bars—snag one for a bubbly boost without bending the odds or prize tables.</span>
+                </li>
+              </ul>
+            </div>
+            <div
+              class="start-screen-card flex flex-col gap-3 rounded-[28px] border border-emerald-100/60 bg-white/85 px-6 py-6 shadow-[0_12px_28px_rgba(15,118,110,0.12)] backdrop-blur-sm md:px-7"
+            >
+              <div class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600/80">Know Before You Play</div>
+              <div id="startScreenDisclaimer" class="space-y-2 text-xs leading-relaxed text-stone-500">
+                <p class="font-semibold text-emerald-700/80">Disclaimer</p>
+                <p>
+                  By pressing "Pop to Play", you acknowledge these tips are general recommendations. Always follow garment care labels and consider fabric restrictions before trying a technique.
+                </p>
+                <p>
+                  Dublin Cleaners is not responsible for damage that may result from misuse or disregarding proper care instructions—test cautiously and clean responsibly.
+                </p>
               </div>
             </div>
-          </div>
-          <div id="startScreenLead" class="text-xl text-stone-500 text-center max-w-2xl">
-            Tap every stain off this shirt in 12 seconds to keep the garment
-            spotless and your prize streak alive!
-          </div>
-          <div class="flex flex-col items-center gap-3">
-            <div class="bubble-wow" id="playBubble">
-              <img
-                src="https://www.dublincleaners.com/wp-content/uploads/2025/10/bubble.png"
-                alt="Glowing soap bubble"
-                class="bubble-wow__image"
-              />
-              <div
-                class="bubble-wow__sparkle bubble-wow__sparkle--one"
-                aria-hidden="true"
-              ></div>
-              <div
-                class="bubble-wow__sparkle bubble-wow__sparkle--two"
-                aria-hidden="true"
-              ></div>
-              <div
-                class="bubble-wow__sparkle bubble-wow__sparkle--three"
-                aria-hidden="true"
-              ></div>
-              <button
-                id="playBtn"
-                class="bubble-wow__button px-8 py-4 text-2xl shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
-              >
-                Pop to Play!
-              </button>
-            </div>
-            <div class="bubble-wow__caption text-emerald-700 text-xs md:text-sm font-semibold text-center">
-              Tap the magic bubble to launch the suds cannon
-            </div>
-          </div>
-        </div>
-        <div class="flex-1 w-full max-w-xl flex flex-col items-center xl:items-stretch gap-6">
-          <div class="start-screen-info grid gap-3 text-base text-stone-600 text-left w-full">
-            <div class="rounded-2xl bg-emerald-50/90 px-5 py-3 shadow-inner">
-              <span class="text-2xl mr-2">🧼</span>
-              Race the timer and blast each splatter—no rule changes, just a
-              sudsy remix of the classic challenge you know.
-            </div>
-            <div class="rounded-2xl bg-emerald-50/90 px-5 py-3 shadow-inner">
-              <span class="text-2xl mr-2">🎯</span>
-              Build streaks to flex your skills and unlock bigger bragging
-              rights while the difficulty ramps up each win.
-            </div>
-            <div class="rounded-2xl bg-emerald-50/90 px-5 py-3 shadow-inner">
-              <span class="text-2xl mr-2">💥</span>
-              Watch for surprise soap bars—snag one for a bubbly boost without
-              breaking the odds or prize tables.
-            </div>
-          </div>
-          <div id="startScreenDisclaimer" class="text-xs text-stone-400 text-center xl:text-left w-full">
-            Disclaimer<br />
-            By pressing "Play Now", you understand this content provides general
-            fabric care tips only. Always follow the care labels on your
-            garments and be aware of any restrictions. Use these tips at your
-            own risk—Dublin Cleaners is not responsible for any damage that may
-            result from misuse or disregard of proper care instructions.
-          </div>
+          </aside>
         </div>
       </div>
       <div
