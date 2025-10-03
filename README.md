@@ -2,6 +2,8 @@
 
 An ✨ 12-second touch game for Dublin Cleaners’ 55″ Elo ET5502L portrait kiosk. Guests wipe stains off a crisp white dress shirt while a cartoony cannon lobs extra splatters; clear them all to reveal a quick cleaning tip and win prizes for discounts off your dry cleaning bill.
 
+> **Design guidance:** Craft every update kiosk-first for the portrait touch display, and double-check that the same experience remains fully usable on desktop screens.
+
 ## Kiosk Build
 
 This kiosk-focused build removes all audio and restricted browser APIs. Apps Script is configured with `XFrameOptionsMode.ALLOWALL` so the game can be embedded inside iframes without permission errors.
