@@ -8,6 +8,85 @@
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
+      body {
+        min-height: 100dvh;
+      }
+
+      #startScreen {
+        min-height: 100dvh;
+      }
+
+      .start-screen-card {
+        transition: padding 0.3s ease;
+      }
+
+      #startScreenTitle {
+        font-size: clamp(2.75rem, 5vw, 3.5rem);
+      }
+
+      #startScreenSubtitle {
+        font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+      }
+
+      #startScreenLead {
+        font-size: clamp(1rem, 2vw, 1.3rem);
+      }
+
+      #startScreenDisclaimer {
+        font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+        line-height: 1.45;
+      }
+
+      @media (max-height: 1024px) {
+        #startScreen {
+          gap: clamp(2.5rem, 6vh, 3rem);
+          padding-block: clamp(2.5rem, 7vh, 3.5rem);
+        }
+
+        .start-screen-shell {
+          gap: clamp(2.5rem, 7vh, 3.25rem);
+        }
+      }
+
+      @media (max-height: 820px) {
+        .start-screen-card {
+          padding-top: clamp(2rem, 6vh, 2.75rem);
+          padding-bottom: clamp(1.75rem, 6vh, 2.5rem);
+        }
+
+        .start-screen-info {
+          gap: clamp(0.75rem, 2.5vh, 1.25rem);
+        }
+
+        #playBtn {
+          font-size: clamp(1.35rem, 3vw, 1.75rem);
+          padding-inline: clamp(1.75rem, 5vw, 2.5rem);
+          padding-block: clamp(0.9rem, 3vh, 1.2rem);
+        }
+
+        .bubble-wow {
+          width: clamp(200px, 45vw, 320px);
+        }
+      }
+
+      @media (max-height: 720px) {
+        #startScreenTitle {
+          font-size: clamp(2.2rem, 4.5vw, 2.8rem);
+        }
+
+        #startScreenSubtitle {
+          font-size: clamp(1rem, 1.8vw, 1.2rem);
+        }
+
+        #startScreenLead {
+          font-size: clamp(0.95rem, 1.7vw, 1.15rem);
+        }
+
+        #startScreenDisclaimer {
+          font-size: clamp(0.65rem, 1.4vw, 0.78rem);
+        }
+      }
+
       .stain {
         position: absolute;
         filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
@@ -682,17 +761,17 @@
       }
     </style>
   </head>
-  <body class="h-full bg-white overflow-hidden">
+  <body class="min-h-screen bg-white overflow-x-hidden">
     <!-- Attract / Start Screen -->
     <div
       id="startScreen"
-      class="absolute inset-0 flex flex-col items-center justify-start lg:justify-center gap-12 bg-gradient-to-b from-emerald-50 via-white to-white touch-none select-none px-6 pt-24 pb-16 md:pt-28 md:pb-20 overflow-y-auto"
+      class="absolute inset-0 flex flex-col items-center justify-start lg:justify-center gap-12 bg-gradient-to-b from-emerald-50 via-white to-white touch-pan-y select-none px-6 pt-24 pb-16 md:pt-28 md:pb-20 overflow-y-auto"
     >
-      <div class="w-full max-w-6xl flex flex-col items-center gap-12 xl:flex-row xl:items-start xl:justify-center xl:gap-16">
+      <div class="start-screen-shell w-full max-w-6xl flex flex-col items-center gap-12 xl:flex-row xl:items-start xl:justify-center xl:gap-16">
         <div class="flex-1 max-w-3xl flex flex-col items-center gap-8">
           <div class="w-full">
             <div
-              class="flex flex-col items-center gap-6 rounded-[32px] border border-emerald-100/70 bg-white/90 px-8 pt-12 pb-10 shadow-[0_25px_60px_rgba(16,185,129,0.18)] backdrop-blur-sm md:px-12"
+              class="start-screen-card flex flex-col items-center gap-6 rounded-[32px] border border-emerald-100/70 bg-white/90 px-8 pt-12 pb-10 shadow-[0_25px_60px_rgba(16,185,129,0.18)] backdrop-blur-sm md:px-12"
             >
               <div class="w-full flex justify-center">
                 <div
@@ -719,17 +798,17 @@
                 </div>
               </div>
               <div class="text-center">
-                <div class="text-5xl font-black tracking-tight text-emerald-900">
+                <div id="startScreenTitle" class="text-5xl font-black tracking-tight text-emerald-900">
                   Stain Blaster
                 </div>
-                <div class="mt-4 text-lg md:text-xl text-emerald-700/80">
+                <div id="startScreenSubtitle" class="mt-4 text-lg md:text-xl text-emerald-700/80">
                   Swipe the stains away in 12 seconds for cleaning tips, prizes,
                   and exclusive Dublin Cleaners discounts.
                 </div>
               </div>
             </div>
           </div>
-          <div class="text-xl text-stone-500 text-center max-w-2xl">
+          <div id="startScreenLead" class="text-xl text-stone-500 text-center max-w-2xl">
             Tap every stain off this shirt in 12 seconds to keep the garment
             spotless and your prize streak alive!
           </div>
@@ -765,7 +844,7 @@
           </div>
         </div>
         <div class="flex-1 w-full max-w-xl flex flex-col items-center xl:items-stretch gap-6">
-          <div class="grid gap-3 text-base text-stone-600 text-left w-full">
+          <div class="start-screen-info grid gap-3 text-base text-stone-600 text-left w-full">
             <div class="rounded-2xl bg-emerald-50/90 px-5 py-3 shadow-inner">
               <span class="text-2xl mr-2">🧼</span>
               Race the timer and blast each splatter—no rule changes, just a
@@ -782,7 +861,7 @@
               breaking the odds or prize tables.
             </div>
           </div>
-          <div class="text-xs text-stone-400 text-center xl:text-left w-full">
+          <div id="startScreenDisclaimer" class="text-xs text-stone-400 text-center xl:text-left w-full">
             Disclaimer<br />
             By pressing "Play Now", you understand this content provides general
             fabric care tips only. Always follow the care labels on your
