@@ -133,6 +133,113 @@
         border-color: rgba(255, 255, 255, 0.95) transparent transparent
           transparent;
       }
+      .bubble-wow {
+        position: relative;
+        width: clamp(220px, 60vw, 420px);
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        isolation: isolate;
+        animation: bubble-sway 7s ease-in-out infinite;
+      }
+      .bubble-wow::before {
+        content: "";
+        position: absolute;
+        inset: 8%;
+        border-radius: 999px;
+        background: radial-gradient(
+          circle at 28% 28%,
+          rgba(255, 255, 255, 0.95) 0%,
+          rgba(240, 253, 250, 0.55) 28%,
+          rgba(110, 231, 183, 0.28) 56%,
+          rgba(16, 185, 129, 0.18) 74%,
+          rgba(16, 185, 129, 0) 100%
+        );
+        filter: blur(0.5px);
+        opacity: 0.8;
+        mix-blend-mode: screen;
+        z-index: 0;
+        animation: bubble-halo 6s ease-in-out infinite;
+      }
+      .bubble-wow::after {
+        content: "";
+        position: absolute;
+        inset: 3%;
+        border-radius: 999px;
+        border: 2px solid rgba(209, 250, 229, 0.65);
+        mix-blend-mode: screen;
+        filter: blur(0.2px);
+        opacity: 0.85;
+        z-index: 1;
+        animation: bubble-halo 5s ease-in-out infinite reverse;
+      }
+      .bubble-wow__image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 32px 45px rgba(16, 185, 129, 0.35));
+        z-index: 2;
+        animation: bubble-breathe 5.5s ease-in-out infinite;
+      }
+      .bubble-wow__sparkle {
+        position: absolute;
+        width: 24%;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.95),
+          rgba(255, 255, 255, 0)
+        );
+        opacity: 0.75;
+        mix-blend-mode: screen;
+        filter: blur(0.4px);
+        z-index: 2;
+        animation: bubble-twinkle 4s ease-in-out infinite;
+      }
+      .bubble-wow__sparkle--one {
+        top: 14%;
+        left: 18%;
+        animation-delay: -0.4s;
+      }
+      .bubble-wow__sparkle--two {
+        top: 24%;
+        right: 16%;
+        animation-delay: 0.9s;
+      }
+      .bubble-wow__sparkle--three {
+        bottom: 18%;
+        left: 24%;
+        animation-delay: 1.8s;
+      }
+      .bubble-wow__button {
+        position: relative;
+        z-index: 3;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(135deg, #34d399, #0f766e);
+        color: #f0fdfa;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 800;
+        box-shadow: 0 18px 32px rgba(16, 185, 129, 0.45);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        animation: bubble-button-pop 3.8s ease-in-out infinite;
+      }
+      .bubble-wow__button:hover,
+      .bubble-wow__button:focus-visible {
+        transform: scale(1.05);
+        box-shadow: 0 22px 36px rgba(14, 116, 144, 0.45);
+      }
+      .bubble-wow__button:active {
+        transform: scale(0.94);
+        box-shadow: 0 12px 22px rgba(16, 185, 129, 0.55);
+      }
+      .bubble-wow__caption {
+        text-transform: uppercase;
+        letter-spacing: 0.24em;
+      }
       @keyframes bubble-in {
         0% {
           transform: scale(0.45);
@@ -165,6 +272,66 @@
         50% {
           transform: translateY(-8px) scale(1.05);
           filter: drop-shadow(0 28px 38px rgba(16, 185, 129, 0.45));
+        }
+      }
+
+      @keyframes bubble-sway {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-3deg);
+        }
+        50% {
+          transform: translateY(-14px) rotate(3deg);
+        }
+      }
+
+      @keyframes bubble-breathe {
+        0%,
+        100% {
+          transform: scale(0.98) translateY(0);
+        }
+        50% {
+          transform: scale(1.02) translateY(-6px);
+        }
+      }
+
+      @keyframes bubble-halo {
+        0%,
+        100% {
+          opacity: 0.75;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.05);
+        }
+      }
+
+      @keyframes bubble-twinkle {
+        0%,
+        100% {
+          opacity: 0.35;
+          transform: scale(0.8) rotate(-6deg);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.15) rotate(6deg);
+        }
+      }
+
+      @keyframes bubble-button-pop {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        40% {
+          transform: scale(1.08);
+        }
+        55% {
+          transform: scale(0.96);
+        }
+        70% {
+          transform: scale(1.04);
         }
       }
 
@@ -552,6 +719,36 @@
           breaking the odds or prize tables.
         </div>
       </div>
+      <div class="flex flex-col items-center gap-3">
+        <div class="bubble-wow">
+          <img
+            src="https://www.dublincleaners.com/wp-content/uploads/2025/10/bubble.png"
+            alt="Glowing soap bubble"
+            class="bubble-wow__image"
+          />
+          <div
+            class="bubble-wow__sparkle bubble-wow__sparkle--one"
+            aria-hidden="true"
+          ></div>
+          <div
+            class="bubble-wow__sparkle bubble-wow__sparkle--two"
+            aria-hidden="true"
+          ></div>
+          <div
+            class="bubble-wow__sparkle bubble-wow__sparkle--three"
+            aria-hidden="true"
+          ></div>
+          <button
+            id="playBtn"
+            class="bubble-wow__button px-8 py-4 text-2xl shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+          >
+            Pop to Play!
+          </button>
+        </div>
+        <div class="bubble-wow__caption text-emerald-700 text-xs md:text-sm font-semibold text-center">
+          Tap the magic bubble to launch the suds cannon
+        </div>
+      </div>
       <div class="text-xs text-stone-400 text-center max-w-md px-4">
         Disclaimer<br />
         By pressing "Play Now", you understand this content provides general
@@ -560,12 +757,6 @@
         Cleaners is not responsible for any damage that may result from misuse
         or disregard of proper care instructions.
       </div>
-      <button
-        id="playBtn"
-        class="px-6 py-3 bg-emerald-600 text-white text-2xl rounded-2xl shadow-lg active:scale-95 transition"
-      >
-        Play Now
-      </button>
       <div
         id="attractCannon"
         class="glitch-shell glitch-cannon glitch-cannon--top-left select-none"
