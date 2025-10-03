@@ -28,6 +28,20 @@
         right: auto;
         bottom: auto;
       }
+
+      .glitch-cannon--bottom-right {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+        right: calc(env(safe-area-inset-right, 0px) + 1rem);
+        top: auto;
+        left: auto;
+      }
+
+      .glitch-cannon--bottom-left {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+        left: calc(env(safe-area-inset-left, 0px) + 1rem);
+        top: auto;
+        right: auto;
+      }
       .glitch-shell {
         position: relative;
         display: inline-block;
@@ -141,6 +155,7 @@
         place-items: center;
         isolation: isolate;
         animation: bubble-sway 7s ease-in-out infinite;
+        cursor: pointer;
       }
       .bubble-wow::before {
         content: "";
@@ -734,7 +749,7 @@
         </div>
       </div>
       <div class="flex flex-col items-center gap-3">
-        <div class="bubble-wow">
+        <div class="bubble-wow" id="playBubble">
           <img
             src="https://www.dublincleaners.com/wp-content/uploads/2025/10/bubble.png"
             alt="Glowing soap bubble"
@@ -773,7 +788,7 @@
       </div>
       <div
         id="attractCannon"
-        class="glitch-shell glitch-cannon glitch-cannon--top-left select-none"
+        class="glitch-shell glitch-cannon glitch-cannon--bottom-right select-none"
         aria-hidden="true"
       >
         <img
@@ -825,7 +840,7 @@
       <!-- stains injected here -->
       <div
         id="cannon"
-        class="glitch-shell glitch-cannon glitch-cannon--top-left select-none"
+        class="glitch-shell glitch-cannon glitch-cannon--bottom-right select-none"
         aria-hidden="true"
       >
         <img
@@ -1005,16 +1020,18 @@
         const DEVICE = "kiosk";
         const GAME_TIME = 12; // seconds per round
         const RESET_DELAY = 60000; // ms before auto reset (4x longer)
-        const ACTIVE_CANNON_CORNER = "glitch-cannon--top-left";
+        const ACTIVE_CANNON_CORNER = "glitch-cannon--bottom-right";
         const ALL_CANNON_CORNER_CLASSES = [
-          ACTIVE_CANNON_CORNER,
+          "glitch-cannon--top-left",
           "glitch-cannon--bottom-left",
           "glitch-cannon--bottom-right",
         ];
         const CANNON_MOUTH_OFFSETS = {
-          [ACTIVE_CANNON_CORNER]: { x: 0.88, y: 0.36 },
+          "glitch-cannon--top-left": { x: 0.88, y: 0.36 },
+          "glitch-cannon--bottom-left": { x: 0.88, y: 0.36 },
+          "glitch-cannon--bottom-right": { x: 0.88, y: 0.36 },
         };
-        const ATTRACT_CANNON_IDLE_ANGLE = -Math.PI / 4;
+        const ATTRACT_CANNON_IDLE_ANGLE = (-3 * Math.PI) / 4;
 
         let STAIN_START = BASE_STAIN_START;
         let STAIN_SIZE = BASE_STAIN_SIZE;
@@ -1139,6 +1156,7 @@
         const qrWrap = document.getElementById("qrWrap");
         const logo = document.getElementById("logo");
         const playBtn = document.getElementById("playBtn");
+        const playBubble = document.getElementById("playBubble");
         const highScoreEl = document.getElementById("highScore");
         const powerupToast = document.getElementById("powerupToast");
         const progressFill = document.getElementById("progressFill");
@@ -1828,6 +1846,11 @@
           }
         }
 
+        function requestStartRound() {
+          if (isRoundActive) return;
+          startRound();
+        }
+
         function begin() {
           if (pendingHighScore !== null) {
             skipHighScoreName();
@@ -2106,9 +2129,17 @@
           pointCannonAtCenter();
         });
 
-        playBtn.addEventListener("pointerdown", () => {
-          startRound();
+        playBtn.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          requestStartRound();
         });
+        if (playBubble) {
+          playBubble.addEventListener("pointerdown", (event) => {
+            if (event.target.closest("button")) return;
+            event.preventDefault();
+            requestStartRound();
+          });
+        }
         document
           .getElementById("restartBtn")
           .addEventListener("pointerdown", () => {
