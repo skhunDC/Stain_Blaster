@@ -20,6 +20,18 @@
         transition: padding 0.3s ease;
       }
 
+      .start-screen-hero {
+        gap: clamp(2.25rem, 7vh, 3.25rem);
+      }
+
+      .start-screen-hero__bubble {
+        gap: clamp(1rem, 3.2vh, 1.8rem);
+      }
+
+      .start-screen-logo {
+        width: clamp(10rem, 26vw, 13.5rem);
+      }
+
       #startScreenTitle {
         font-size: clamp(2.75rem, 5vw, 3.5rem);
       }
@@ -47,9 +59,23 @@
         }
       }
 
+      @media (max-height: 900px) {
+        .start-screen-logo {
+          width: clamp(9.5rem, 24vw, 12.5rem);
+        }
+
+        .start-screen-hero {
+          gap: clamp(2rem, 6vh, 2.75rem);
+        }
+
+        .start-screen-hero__bubble {
+          gap: clamp(0.9rem, 3vh, 1.6rem);
+        }
+      }
+
       @media (max-height: 820px) {
         #startScreen .start-screen-card {
-          padding-block: clamp(1.85rem, 6vh, 2.4rem);
+          padding-block: clamp(1.7rem, 5.6vh, 2.2rem);
         }
 
         #playBtn {
@@ -59,7 +85,7 @@
         }
 
         .bubble-wow {
-          width: clamp(200px, 45vw, 320px);
+          width: clamp(180px, 44vw, 280px);
         }
       }
 
@@ -78,6 +104,38 @@
 
         #startScreenDisclaimer {
           font-size: clamp(0.65rem, 1.4vw, 0.78rem);
+        }
+      }
+
+      @media (max-height: 700px) {
+        #startScreen {
+          padding-block: clamp(1.35rem, 5.5vh, 1.8rem);
+        }
+
+        #startScreen .start-screen-card {
+          padding-block: clamp(1.3rem, 4.8vh, 1.85rem);
+        }
+
+        .start-screen-logo {
+          width: clamp(8.75rem, 23vw, 10.75rem);
+        }
+
+        .start-screen-hero {
+          gap: clamp(1.5rem, 4.5vh, 2rem);
+        }
+
+        .start-screen-hero__bubble {
+          gap: clamp(0.65rem, 2.2vh, 1.1rem);
+        }
+
+        .bubble-wow {
+          width: clamp(150px, 40vw, 220px);
+        }
+
+        #playBtn {
+          font-size: clamp(1.1rem, 2.6vw, 1.35rem);
+          padding-inline: clamp(1.35rem, 3.5vw, 1.75rem);
+          padding-block: clamp(0.7rem, 2.1vh, 0.95rem);
         }
       }
 
@@ -147,6 +205,11 @@
 
       #highScoreModal {
         touch-action: none;
+      }
+
+      #highScore {
+        top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+        right: calc(env(safe-area-inset-right, 0px) + 0.75rem);
       }
 
       #highScoreModal .kb-row {
@@ -222,7 +285,7 @@
       }
       .bubble-wow {
         position: relative;
-        width: clamp(220px, 60vw, 420px);
+        width: clamp(200px, 52vw, 360px);
         aspect-ratio: 1;
         display: grid;
         place-items: center;
@@ -773,9 +836,9 @@
               class="pointer-events-none absolute -top-32 -right-32 hidden h-72 w-72 rounded-full bg-emerald-100/60 blur-3xl lg:block"
               aria-hidden="true"
             ></div>
-            <div class="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-12">
+            <div class="start-screen-hero flex flex-col lg:flex-row lg:items-center">
               <div class="flex flex-1 flex-col items-center gap-6 text-center lg:items-start lg:text-left">
-                <div class="w-56 sm:w-64 md:w-72">
+                <div class="start-screen-logo mx-auto lg:mx-0">
                   <div
                     id="logo"
                     class="glitch-shell relative w-full max-w-sm drop-shadow-2xl transition-transform duration-700 ease-out"
@@ -815,7 +878,7 @@
                   </div>
                 </div>
               </div>
-              <div class="flex flex-col items-center gap-4">
+              <div class="start-screen-hero__bubble flex flex-col items-center">
                 <div class="bubble-wow" id="playBubble">
                   <img
                     src="https://www.dublincleaners.com/wp-content/uploads/2025/10/bubble.png"
@@ -827,7 +890,7 @@
                   <div class="bubble-wow__sparkle bubble-wow__sparkle--three" aria-hidden="true"></div>
                   <button
                     id="playBtn"
-                    class="bubble-wow__button px-8 py-4 text-2xl shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
+                    class="bubble-wow__button px-8 py-4 text-xl md:text-2xl shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
                   >
                     Pop to Play!
                   </button>
@@ -1192,7 +1255,7 @@
           "Your dry-cleaner believes in you 😎",
           "Beat the Su-Stained High Score!!",
         ];
-        const BUBBLE_INTERVAL = 4000; // ms between spawns
+        const BUBBLE_INTERVAL = 5000; // ms between spawns (25% less frequent)
         const BUBBLE_JITTER = 1000; // ms random jitter
         const BUBBLE_DURATION = 5000; // ms visible
         const LOGO_GLITCH_INTERVAL = 9000; // ms between glitch triggers
