@@ -1243,7 +1243,8 @@
         const POWERUP_MIN_DELAY = 3600; // ms
         const POWERUP_MAX_DELAY = 6800; // ms
         const POWERUP_LIFETIME = 4200; // ms soap visible
-        const POWERUP_MAX_CLEARS = 3;
+        const POWERUP_MIN_CLEARS = 4;
+        const POWERUP_MAX_CLEARS = 6;
         const SOAP_SLOW_DURATION = 2200; // ms pause on cannon
         const POWERUP_TOAST_DURATION = 2400; // ms toast visibility
         const BUBBLE_LINES = [
@@ -1692,7 +1693,10 @@
           activePowerUp = null;
           clearTimeout(powerUpLifetimeTimer);
           createFoamBurst(centerX, centerY);
-          const cleaned = cleanRandomStains(POWERUP_MAX_CLEARS);
+          const targetClears = Math.floor(
+            randomBetween(POWERUP_MIN_CLEARS, POWERUP_MAX_CLEARS + 1),
+          );
+          const cleaned = cleanRandomStains(targetClears);
           if (cleaned > 0) {
             showPowerupToast(
               `Foam burst! ${cleaned} stain${cleaned > 1 ? "s" : ""} scrubbed!`,
