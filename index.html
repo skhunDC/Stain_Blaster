@@ -140,8 +140,20 @@
       }
 
       /* Prevent touch highlight/select behavior from interrupting gameplay */
-      :root {
+      :root,
+      body {
         -webkit-tap-highlight-color: transparent;
+      }
+
+      :root.is-touching #gameArea,
+      :root.is-touching #gameArea * {
+        outline: none !important;
+        box-shadow: none !important;
+        caret-color: transparent;
+      }
+
+      :root.is-touching #gameArea *::selection {
+        background: transparent;
       }
 
       #gameArea,
@@ -1185,6 +1197,24 @@
         } catch (err) {
           console.error("Failed to load prize module", err);
         }
+
+        const rootEl = document.documentElement;
+
+        window.addEventListener(
+          "pointerdown",
+          (event) => {
+            if (event.pointerType === "touch" || event.pointerType === "pen") {
+              rootEl.classList.add("is-touching");
+            } else if (event.pointerType === "mouse") {
+              rootEl.classList.remove("is-touching");
+            }
+          },
+          { passive: true },
+        );
+
+        window.addEventListener("keydown", () => {
+          rootEl.classList.remove("is-touching");
+        });
         /* ----- Config ----- */
 
         const BASE_STAIN_START = 23; // initial stains
@@ -1934,6 +1964,8 @@
           s.src = randomImage();
           s.className = "stain";
           s.dataset.stain = "true";
+          s.alt = "";
+          s.draggable = false;
           const rect = gameArea.getBoundingClientRect();
           const topMargin = computeTopMargin(rect);
           const spawnW = Math.max(0, rect.width - STAIN_SIZE);
@@ -1952,16 +1984,31 @@
           s.style.width = STAIN_SIZE + "px";
           s.style.height = STAIN_SIZE + "px";
           s.style.transform = `rotate(${Math.random() * 360}deg)`;
-          const remove = () => {
+
+          function handlePointerDown(event) {
+            if (event?.pointerType === "touch" || event?.pointerType === "pen") {
+              event.preventDefault();
+              if (
+                event.currentTarget instanceof HTMLElement &&
+                typeof event.currentTarget.blur === "function"
+              ) {
+                event.currentTarget.blur();
+              }
+            }
+            remove();
+          }
+
+          function remove() {
             if (!s.isConnected) return;
-            s.removeEventListener("pointerdown", remove);
+            s.removeEventListener("pointerdown", handlePointerDown);
             s.remove();
             s.__removeStain = null;
             remaining = Math.max(0, (remaining || 0) - 1);
             updateProgressDisplay();
             if (remaining === 0 && seconds > 0) win();
-          };
-          s.addEventListener("pointerdown", remove);
+          }
+
+          s.addEventListener("pointerdown", handlePointerDown, { passive: false });
           s.__removeStain = remove;
           gameArea.appendChild(s);
           remaining = (remaining || 0) + 1;
