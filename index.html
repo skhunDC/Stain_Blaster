@@ -140,8 +140,20 @@
       }
 
       /* Prevent touch highlight/select behavior from interrupting gameplay */
-      :root {
+      :root,
+      body {
         -webkit-tap-highlight-color: transparent;
+      }
+
+      :root.is-touching #gameArea,
+      :root.is-touching #gameArea * {
+        outline: none !important;
+        box-shadow: none !important;
+        caret-color: transparent;
+      }
+
+      :root.is-touching #gameArea *::selection {
+        background: transparent;
       }
 
       #gameArea,
@@ -1185,6 +1197,24 @@
         } catch (err) {
           console.error("Failed to load prize module", err);
         }
+
+        const rootEl = document.documentElement;
+
+        window.addEventListener(
+          "pointerdown",
+          (event) => {
+            if (event.pointerType === "touch" || event.pointerType === "pen") {
+              rootEl.classList.add("is-touching");
+            } else if (event.pointerType === "mouse") {
+              rootEl.classList.remove("is-touching");
+            }
+          },
+          { passive: true },
+        );
+
+        window.addEventListener("keydown", () => {
+          rootEl.classList.remove("is-touching");
+        });
         /* ----- Config ----- */
 
         const BASE_STAIN_START = 23; // initial stains
@@ -1983,25 +2013,22 @@
           });
         });
 
-        function handleGameAreaPointerDown(event) {
-          const target = event.target;
-          if (!target) return;
-          const stain = target.closest ? target.closest(".stain") : null;
-          if (!stain || !gameArea.contains(stain)) return;
-          if (typeof stain.__removeStain === "function") {
-            stain.__removeStain();
-          } else {
-            removeStain(stain);
-          }
-        }
-
-        gameArea.addEventListener("pointerdown", handleGameAreaPointerDown);
-
-        function spawnStain(x, y, metrics) {
-          const spawnMetrics = metrics || getSpawnMetrics();
-          const { rect, topMargin, spawnW, spawnH } = spawnMetrics;
-          if (!rect.width || !rect.height) {
-            return null;
+        function spawnStain(x, y) {
+          const s = document.createElement("img");
+          s.src = randomImage();
+          s.className = "stain";
+          s.dataset.stain = "true";
+          s.alt = "";
+          s.draggable = false;
+          const rect = gameArea.getBoundingClientRect();
+          const topMargin = computeTopMargin(rect);
+          const spawnW = Math.max(0, rect.width - STAIN_SIZE);
+          const spawnH = Math.max(
+            0,
+            rect.height - STAIN_SIZE - topMargin - BOTTOM_MARGIN,
+          );
+          if (x === undefined) {
+            x = Math.random() * spawnW;
           }
           const stain = document.createElement("img");
           stain.src = randomImage();
@@ -2012,19 +2039,39 @@
           if (typeof nextX !== "number") {
             nextX = Math.random() * spawnW;
           }
-          if (typeof nextY !== "number") {
-            nextY = Math.random() * spawnH + topMargin;
+          s.style.left = x + "px";
+          s.style.top = y + "px";
+          s.style.width = STAIN_SIZE + "px";
+          s.style.height = STAIN_SIZE + "px";
+          s.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+          function handlePointerDown(event) {
+            if (event?.pointerType === "touch" || event?.pointerType === "pen") {
+              event.preventDefault();
+              if (
+                event.currentTarget instanceof HTMLElement &&
+                typeof event.currentTarget.blur === "function"
+              ) {
+                event.currentTarget.blur();
+              }
+            }
+            remove();
           }
-          stain.style.left = nextX + "px";
-          stain.style.top = nextY + "px";
-          stain.style.width = STAIN_SIZE + "px";
-          stain.style.height = STAIN_SIZE + "px";
-          stain.style.transform = `rotate(${Math.random() * 360}deg)`;
-          const remove = () => removeStain(stain);
-          stain.__removeStain = remove;
-          activeStains.add(stain);
-          gameArea.appendChild(stain);
-          remaining = activeStains.size;
+
+          function remove() {
+            if (!s.isConnected) return;
+            s.removeEventListener("pointerdown", handlePointerDown);
+            s.remove();
+            s.__removeStain = null;
+            remaining = Math.max(0, (remaining || 0) - 1);
+            updateProgressDisplay();
+            if (remaining === 0 && seconds > 0) win();
+          }
+
+          s.addEventListener("pointerdown", handlePointerDown, { passive: false });
+          s.__removeStain = remove;
+          gameArea.appendChild(s);
+          remaining = (remaining || 0) + 1;
           total = (total || 0) + 1;
           updateProgressDisplay();
           return stain;
