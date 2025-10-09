@@ -1284,6 +1284,28 @@
             scoreRect.bottom - areaRect.top + HIGH_SCORE_CLEARANCE;
           return Math.max(base, clearance);
         }
+
+        function getSpawnMetrics() {
+          const rect = gameArea.getBoundingClientRect();
+          if (!rect.width || !rect.height) {
+            return {
+              rect,
+              topMargin: TOP_MARGIN,
+              spawnW: 0,
+              spawnH: 0,
+            };
+          }
+          const topMargin = computeTopMargin(rect);
+          return {
+            rect,
+            topMargin,
+            spawnW: Math.max(0, rect.width - STAIN_SIZE),
+            spawnH: Math.max(
+              0,
+              rect.height - STAIN_SIZE - topMargin - BOTTOM_MARGIN,
+            ),
+          };
+        }
         const STAIN_IMAGES = [
           "https://www.dublincleaners.com/wp-content/uploads/2025/08/Ketchup.png",
           "https://www.dublincleaners.com/wp-content/uploads/2025/08/Coffee.png",
@@ -1394,6 +1416,8 @@
           resultShown = false;
 
         const glitchTimers = new Map();
+
+        const activeStains = new Set();
 
         let activePowerUp = null;
         let isRoundActive = false;
@@ -1661,16 +1685,39 @@
           setTimeout(() => burst.remove(), 600);
         }
 
+        function removeStain(stain) {
+          if (!stain || !activeStains.has(stain)) {
+            return false;
+          }
+          activeStains.delete(stain);
+          stain.__removeStain = null;
+          if (stain.isConnected) {
+            stain.remove();
+          }
+          remaining = activeStains.size;
+          updateProgressDisplay();
+          if (isRoundActive && seconds > 0 && remaining === 0) {
+            win();
+          }
+          return true;
+        }
+
         function cleanRandomStains(maxCount) {
-          const stains = Array.from(gameArea.querySelectorAll(".stain"));
+          const stains = Array.from(activeStains);
           if (!stains.length) return 0;
           let cleaned = 0;
-          for (const stain of stains.sort(() => Math.random() - 0.5)) {
+          const limit = Math.min(maxCount, stains.length);
+          for (let i = 0; i < limit; i++) {
+            const swapIndex = i + Math.floor(Math.random() * (stains.length - i));
+            [stains[i], stains[swapIndex]] = [stains[swapIndex], stains[i]];
+            const stain = stains[i];
+            if (!stain) continue;
             if (typeof stain.__removeStain === "function") {
               stain.__removeStain();
               cleaned++;
+            } else if (removeStain(stain)) {
+              cleaned++;
             }
-            if (cleaned >= maxCount) break;
           }
           return cleaned;
         }
@@ -1697,21 +1744,22 @@
           if (activePowerUp && activePowerUp.isConnected) {
             return;
           }
-          const rect = gameArea.getBoundingClientRect();
+          const metrics = getSpawnMetrics();
+          const { rect, topMargin } = metrics;
           if (!rect.width || !rect.height) return;
           const soap = document.createElement("img");
           soap.src = SOAP_POWERUP_IMAGE;
           soap.alt = "Sudsy power-up";
           soap.className = "powerup";
           const soapSize = 86;
-          const topMargin = computeTopMargin(rect) + 30;
+          const soapTopMargin = topMargin + 30;
           const spawnW = Math.max(0, rect.width - soapSize);
           const spawnH = Math.max(
             0,
-            rect.height - soapSize - topMargin - BOTTOM_MARGIN,
+            rect.height - soapSize - soapTopMargin - BOTTOM_MARGIN,
           );
           const x = Math.random() * spawnW;
-          const y = Math.random() * spawnH + topMargin;
+          const y = Math.random() * spawnH + soapTopMargin;
           soap.style.left = `${x}px`;
           soap.style.top = `${y}px`;
           soap.style.width = `${soapSize}px`;
@@ -1737,7 +1785,13 @@
 
         function activateSoapPowerUp(soap) {
           if (activePowerUp !== soap) return;
-          const areaRect = gameArea.getBoundingClientRect();
+          const { rect: areaRect } = getSpawnMetrics();
+          if (!areaRect.width || !areaRect.height) {
+            soap.remove();
+            activePowerUp = null;
+            schedulePowerUp();
+            return;
+          }
           const soapRect = soap.getBoundingClientRect();
           const centerX = soapRect.left - areaRect.left + soapRect.width / 2;
           const centerY = soapRect.top - areaRect.top + soapRect.height / 2;
@@ -1976,8 +2030,14 @@
           if (x === undefined) {
             x = Math.random() * spawnW;
           }
-          if (y === undefined) {
-            y = Math.random() * spawnH + topMargin;
+          const stain = document.createElement("img");
+          stain.src = randomImage();
+          stain.className = "stain";
+          stain.dataset.stain = "true";
+          let nextX = x;
+          let nextY = y;
+          if (typeof nextX !== "number") {
+            nextX = Math.random() * spawnW;
           }
           s.style.left = x + "px";
           s.style.top = y + "px";
@@ -2014,7 +2074,7 @@
           remaining = (remaining || 0) + 1;
           total = (total || 0) + 1;
           updateProgressDisplay();
-          return s;
+          return stain;
         }
 
         function animateProjectile(el, x0, y0, x1, y1) {
@@ -2038,16 +2098,12 @@
         }
 
         function fireCannon() {
-          const area = gameArea.getBoundingClientRect();
+          const metrics = getSpawnMetrics();
+          const { rect, topMargin, spawnW, spawnH } = metrics;
+          if (!rect.width || !rect.height) return;
           const { areaX: mouthX, areaY: mouthY } = getCannonMouthPosition(
             cannon,
-            area,
-          );
-          const topMargin = computeTopMargin(area);
-          const spawnW = Math.max(0, area.width - STAIN_SIZE);
-          const spawnH = Math.max(
-            0,
-            area.height - STAIN_SIZE - topMargin - BOTTOM_MARGIN,
+            rect,
           );
           const targetX = Math.random() * spawnW;
           const targetY = Math.random() * spawnH + topMargin;
@@ -2055,8 +2111,9 @@
           const offset = 30;
           const startX = mouthX + Math.cos(angle) * offset;
           const startY = mouthY + Math.sin(angle) * offset;
-          const s = spawnStain(startX, startY);
-          animateProjectile(s, startX, startY, targetX, targetY);
+          const stain = spawnStain(startX, startY, metrics);
+          if (!stain) return;
+          animateProjectile(stain, startX, startY, targetX, targetY);
           pointCannonAtCenter();
         }
 
@@ -2097,7 +2154,13 @@
           resetCannonPosition();
           triggerLogoGlitch();
           scheduleLogoGlitch(0);
-          gameArea.querySelectorAll(".stain").forEach((s) => s.remove());
+          for (const stain of activeStains) {
+            stain.__removeStain = null;
+            if (stain.isConnected) {
+              stain.remove();
+            }
+          }
+          activeStains.clear();
           if (!gameArea.contains(timerEl)) gameArea.appendChild(timerEl);
           remaining = 0;
           total = 0;
@@ -2106,7 +2169,10 @@
           highScoreEl.classList.remove("hidden");
           updateStreakBadge();
           updateProgressDisplay();
-          for (let i = 0; i < STAIN_START; i++) spawnStain();
+          const spawnMetrics = getSpawnMetrics();
+          for (let i = 0; i < STAIN_START; i++) {
+            spawnStain(undefined, undefined, spawnMetrics);
+          }
           seconds = GAME_TIME;
           timerEl.textContent = seconds;
           startTime = now();
@@ -2128,7 +2194,8 @@
           clearInterval(countdown);
           clearInterval(fireInterval);
           // Double-check no stain elements remain before allowing a win
-          const stainsLeft = gameArea.querySelectorAll(".stain").length;
+          const stainsLeft = activeStains.size ||
+            gameArea.querySelectorAll(".stain").length;
           showResult(stainsLeft === 0);
         }
 
@@ -2318,6 +2385,16 @@
           resultShown = false;
           applyCannonCorner(attractCannon);
           requestAnimationFrame(pointAttractCannonIdle);
+          for (const stain of activeStains) {
+            stain.__removeStain = null;
+            if (stain.isConnected) {
+              stain.remove();
+            }
+          }
+          activeStains.clear();
+          total = 0;
+          remaining = 0;
+          updateProgressDisplay();
           if (pendingHighScore !== null) {
             skipHighScoreName();
           } else {
